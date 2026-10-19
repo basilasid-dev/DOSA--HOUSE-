@@ -1,0 +1,19 @@
+{
+  "name": "dosa-house",
+  "version": "1.0.0",
+  "description": "DOSA HOUSE - Cozy South Indian Cooking Simulation Game",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^5.8.2",
+    "vite": "^8.3.4"
+  }
+}
