@@ -1,5 +1,5 @@
 /**
- * DOSA HOUSE - Recipe & Cooking Data Types
+ * DOSA HOUSE - Recipe, Cooking, Upgrades & Progression Types
  */
 
 export interface IngredientRequirement {
@@ -45,11 +45,17 @@ export interface Recipe {
   condiments: string[];
   lore: string;
   unlockedByDefault: boolean;
+  unlockCostCoins: number;
+  requiredLevel: number;
 }
+
+export type CustomerMood = 'happy' | 'neutral' | 'impatient';
 
 export interface CustomerOrder {
   id: string;
   customerName: string;
+  customerTitle: string;
+  avatarKey: string;
   tableNumber: number;
   recipeId: string;
   recipeName: string;
@@ -58,7 +64,36 @@ export interface CustomerOrder {
   extraGhee: boolean;
   specialNote: string;
   timeLimitSec: number;
+  patienceRemainingSec: number;
   rewardCoins: number;
+  mood: CustomerMood;
+}
+
+export interface RestaurantUpgrade {
+  id: string;
+  name: string;
+  tamilName: string;
+  category: 'kitchen' | 'ambiance';
+  description: string;
+  icon: string;
+  currentLevel: number;
+  maxLevel: number;
+  costs: number[]; // cost for each tier
+  effectDescription: string;
+}
+
+export interface LevelResult {
+  day: number;
+  serviceTitle: string;
+  starsEarned: number; // 1 - 3
+  customersServed: number;
+  totalCustomers: number;
+  perfectDosas: number;
+  crispinessScorePercent: number;
+  baseEarnings: number;
+  tipsEarned: number;
+  totalCoins: number;
+  overallScore: number;
 }
 
 export type TawaHeatState = 'off' | 'warming' | 'ready' | 'too_hot' | 'burnt';

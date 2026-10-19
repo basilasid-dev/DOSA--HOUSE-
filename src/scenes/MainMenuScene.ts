@@ -5,6 +5,7 @@ import { CozyButton } from '../ui/CozyButton';
 import { SteamEmitter } from '../ui/SteamParticles';
 import { RecipeBookModal } from '../ui/RecipeBookModal';
 import { SettingsModal } from '../ui/SettingsModal';
+import { UpgradesModal } from '../ui/UpgradesModal';
 
 export class MainMenuScene extends Phaser.Scene {
   private steamEmitter?: SteamEmitter;
@@ -280,16 +281,16 @@ export class MainMenuScene extends Phaser.Scene {
    * Interactive wooden navigation buttons column
    */
   private createNavigationMenu(x: number, y: number): void {
-    const spacing = 95;
+    const spacing = 76;
 
     // 1. Play Game Button
     new CozyButton(this, {
       x,
-      y: y - spacing,
+      y: y - spacing * 1.5,
       text: 'Play Game',
       subText: 'Enter Kitchen & Fire up Tawa',
       iconTexture: 'icon_play',
-      width: 360,
+      width: 350,
       onClick: () => {
         if (this.isModalOpen) return;
         this.startGame();
@@ -299,25 +300,39 @@ export class MainMenuScene extends Phaser.Scene {
     // 2. Recipe Book Button
     new CozyButton(this, {
       x,
-      y,
+      y: y - spacing * 0.5,
       text: 'Recipe Book',
-      subText: '5 Master Recipes, Steps & Lore',
+      subText: '10 Master Recipes, Steps & Lore',
       iconTexture: 'icon_recipe_book',
-      width: 360,
+      width: 350,
       onClick: () => {
         if (this.isModalOpen) return;
         this.openRecipeBook();
       }
     });
 
-    // 3. Settings Button
+    // 3. Upgrades Button
     new CozyButton(this, {
       x,
-      y: y + spacing,
+      y: y + spacing * 0.5,
+      text: 'Upgrades & Decor',
+      subText: 'Kitchen Equipment & Heritage Charm',
+      iconTexture: 'icon_upgrades',
+      width: 350,
+      onClick: () => {
+        if (this.isModalOpen) return;
+        this.openUpgrades();
+      }
+    });
+
+    // 4. Settings Button
+    new CozyButton(this, {
+      x,
+      y: y + spacing * 1.5,
       text: 'Settings',
       subText: 'Audio, Visuals & Credits',
       iconTexture: 'icon_settings',
-      width: 360,
+      width: 350,
       onClick: () => {
         if (this.isModalOpen) return;
         this.openSettings();
@@ -404,6 +419,13 @@ export class MainMenuScene extends Phaser.Scene {
     });
   }
 
+  private openUpgrades(): void {
+    this.isModalOpen = true;
+    new UpgradesModal(this, () => {
+      this.isModalOpen = false;
+    });
+  }
+
   private openSettings(): void {
     this.isModalOpen = true;
     new SettingsModal(this, () => {
@@ -411,3 +433,4 @@ export class MainMenuScene extends Phaser.Scene {
     });
   }
 }
+

@@ -16,6 +16,8 @@ export class AssetGenerator {
     AssetGenerator.createVignetteOverlay(scene);
     RealisticKitchenAssets.generateAll(scene);
     AssetGenerator.createRealisticDosaPhotos(scene);
+    AssetGenerator.createCustomerAvatars(scene);
+    AssetGenerator.createProgressionIcons(scene);
   }
 
   /**
@@ -684,5 +686,417 @@ export class AssetGenerator {
 
     scene.textures.addCanvas('photo_mysore_masala', mCanvas);
   }
+
+  /**
+   * Generates expressive South Indian customer character avatar portraits
+   */
+  private static createCustomerAvatars(scene: Phaser.Scene): void {
+    const size = 96;
+
+    // 1. Uncle Venkatesh (Elderly, vibhuti, mustache, glasses, foodie smile)
+    const vCanvas = document.createElement('canvas');
+    vCanvas.width = size;
+    vCanvas.height = size;
+    const vctx = vCanvas.getContext('2d')!;
+    AssetGenerator.drawAvatarCircleBase(vctx, size, '#E0D3BD', '#432616');
+
+    // Kurta collar
+    vctx.fillStyle = '#FFF8EE';
+    vctx.beginPath();
+    vctx.moveTo(28, 92);
+    vctx.lineTo(48, 70);
+    vctx.lineTo(68, 92);
+    vctx.closePath();
+    vctx.fill();
+
+    // Head
+    vctx.fillStyle = '#D69B67';
+    vctx.beginPath();
+    vctx.arc(48, 46, 26, 0, Math.PI * 2);
+    vctx.fill();
+
+    // Grey hair on sides and bald crown
+    vctx.fillStyle = '#CCCCCC';
+    vctx.beginPath();
+    vctx.arc(48, 40, 27, Math.PI * 0.9, Math.PI * 2.1);
+    vctx.stroke();
+
+    // Sandalwood Vibhuti (3 white lines on forehead)
+    vctx.strokeStyle = '#FFFFFF';
+    vctx.lineWidth = 1.8;
+    for (let l = 0; l < 3; l++) {
+      vctx.beginPath();
+      vctx.moveTo(38, 27 + l * 3.5);
+      vctx.lineTo(58, 27 + l * 3.5);
+      vctx.stroke();
+    }
+    // Red Kumkum bindi in center of vibhuti
+    vctx.fillStyle = '#C0392B';
+    vctx.beginPath();
+    vctx.arc(48, 30.5, 2, 0, Math.PI * 2);
+    vctx.fill();
+
+    // Tortoiseshell Glasses
+    vctx.strokeStyle = '#3E2413';
+    vctx.lineWidth = 2.2;
+    vctx.strokeRect(33, 40, 12, 10);
+    vctx.strokeRect(51, 40, 12, 10);
+    vctx.beginPath();
+    vctx.moveTo(45, 45);
+    vctx.lineTo(51, 45);
+    vctx.stroke();
+
+    // Happy eyes
+    vctx.fillStyle = '#221105';
+    vctx.beginPath();
+    vctx.arc(39, 45, 2.5, 0, Math.PI * 2);
+    vctx.arc(57, 45, 2.5, 0, Math.PI * 2);
+    vctx.fill();
+
+    // Grey-White curved mustache
+    vctx.fillStyle = '#EEEEEE';
+    vctx.beginPath();
+    vctx.moveTo(35, 57);
+    vctx.quadraticCurveTo(48, 52, 61, 57);
+    vctx.quadraticCurveTo(48, 62, 35, 57);
+    vctx.fill();
+
+    // Gentle smile
+    vctx.strokeStyle = '#994422';
+    vctx.lineWidth = 1.8;
+    vctx.beginPath();
+    vctx.arc(48, 56, 7, 0.2, Math.PI - 0.2);
+    vctx.stroke();
+
+    scene.textures.addCanvas('avatar_venkatesh', vCanvas);
+
+    // 2. Priya (Young woman, jasmine flowers, nose pin, cheerful smile)
+    const pCanvas = document.createElement('canvas');
+    pCanvas.width = size;
+    pCanvas.height = size;
+    const pctx = pCanvas.getContext('2d')!;
+    AssetGenerator.drawAvatarCircleBase(pctx, size, '#FADBD8', '#C0392B');
+
+    // Kurti collar
+    pctx.fillStyle = '#F39C12';
+    pctx.beginPath();
+    pctx.moveTo(25, 92);
+    pctx.lineTo(48, 68);
+    pctx.lineTo(71, 92);
+    pctx.closePath();
+    pctx.fill();
+
+    // Hair back bun & braid
+    pctx.fillStyle = '#1C130D';
+    pctx.beginPath();
+    pctx.arc(48, 44, 28, 0, Math.PI * 2);
+    pctx.fill();
+
+    // Face
+    pctx.fillStyle = '#C68755';
+    pctx.beginPath();
+    pctx.arc(48, 48, 23, 0, Math.PI * 2);
+    pctx.fill();
+
+    // Center-parted sleek dark hair
+    pctx.fillStyle = '#1C130D';
+    pctx.beginPath();
+    pctx.moveTo(25, 45);
+    pctx.quadraticCurveTo(48, 25, 48, 38);
+    pctx.quadraticCurveTo(48, 25, 71, 45);
+    pctx.lineTo(71, 30);
+    pctx.lineTo(25, 30);
+    pctx.closePath();
+    pctx.fill();
+
+    // Jasmine flowers (Malli Poo) tucked on the side
+    pctx.fillStyle = '#FFFFFF';
+    const flowerDots = [
+      { x: 25, y: 36 }, { x: 22, y: 42 }, { x: 26, y: 48 }, { x: 22, y: 53 }
+    ];
+    flowerDots.forEach(f => {
+      pctx.beginPath();
+      pctx.arc(f.x, f.y, 4, 0, Math.PI * 2);
+      pctx.fill();
+    });
+
+    // Small round red bindi
+    pctx.fillStyle = '#C0392B';
+    pctx.beginPath();
+    pctx.arc(48, 39, 2.2, 0, Math.PI * 2);
+    pctx.fill();
+
+    // Expressive doe eyes
+    pctx.fillStyle = '#1A0E07';
+    pctx.beginPath();
+    pctx.ellipse(39, 47, 3.5, 2.5, 0, 0, Math.PI * 2);
+    pctx.ellipse(57, 47, 3.5, 2.5, 0, 0, Math.PI * 2);
+    pctx.fill();
+
+    // Gold nose pin sparkle
+    pctx.fillStyle = '#FFD700';
+    pctx.beginPath();
+    pctx.arc(43, 53, 1.8, 0, Math.PI * 2);
+    pctx.fill();
+
+    // Warm cheerful smile
+    pctx.strokeStyle = '#93281E';
+    pctx.lineWidth = 2;
+    pctx.beginPath();
+    pctx.arc(48, 55, 6.5, 0.2, Math.PI - 0.2);
+    pctx.stroke();
+
+    scene.textures.addCanvas('avatar_priya', pCanvas);
+
+    // 3. Karthik (Young foodie techie, hipster frames, enthusiastic smile)
+    const kCanvas = document.createElement('canvas');
+    kCanvas.width = size;
+    kCanvas.height = size;
+    const kctx = kCanvas.getContext('2d')!;
+    AssetGenerator.drawAvatarCircleBase(kctx, size, '#D4EFDF', '#27AE60');
+
+    // Maroon shirt collar
+    kctx.fillStyle = '#78281F';
+    kctx.beginPath();
+    kctx.moveTo(26, 92);
+    kctx.lineTo(48, 70);
+    kctx.lineTo(70, 92);
+    kctx.closePath();
+    kctx.fill();
+
+    // Face
+    kctx.fillStyle = '#CD8E5B';
+    kctx.beginPath();
+    kctx.arc(48, 46, 24, 0, Math.PI * 2);
+    kctx.fill();
+
+    // Trendy modern hair
+    kctx.fillStyle = '#21160F';
+    kctx.beginPath();
+    kctx.moveTo(25, 40);
+    kctx.quadraticCurveTo(35, 18, 52, 22);
+    kctx.quadraticCurveTo(68, 20, 71, 40);
+    kctx.lineTo(71, 30);
+    kctx.lineTo(25, 30);
+    kctx.closePath();
+    kctx.fill();
+
+    // Black hipster rectangular glasses
+    kctx.strokeStyle = '#111111';
+    kctx.lineWidth = 2.2;
+    kctx.strokeRect(33, 40, 13, 9);
+    kctx.strokeRect(50, 40, 13, 9);
+    kctx.beginPath();
+    kctx.moveTo(46, 44);
+    kctx.lineTo(50, 44);
+    kctx.stroke();
+
+    // Eager eyes
+    kctx.fillStyle = '#111';
+    kctx.beginPath();
+    kctx.arc(39.5, 44.5, 2.5, 0, Math.PI * 2);
+    kctx.arc(56.5, 44.5, 2.5, 0, Math.PI * 2);
+    kctx.fill();
+
+    // Light beard stubble
+    kctx.fillStyle = 'rgba(50, 30, 20, 0.2)';
+    kctx.beginPath();
+    kctx.arc(48, 58, 12, 0.2, Math.PI - 0.2);
+    kctx.fill();
+
+    // Wide enthusiastic smile
+    kctx.strokeStyle = '#641E16';
+    kctx.lineWidth = 2.2;
+    kctx.beginPath();
+    kctx.arc(48, 55, 7.5, 0.1, Math.PI - 0.1);
+    kctx.stroke();
+
+    scene.textures.addCanvas('avatar_karthik', kCanvas);
+
+    // 4. Auntie Meenakshi (Loving grandma, silver hair, silk saree & jhumkas)
+    const mCanvas = document.createElement('canvas');
+    mCanvas.width = size;
+    mCanvas.height = size;
+    const mctx = mCanvas.getContext('2d')!;
+    AssetGenerator.drawAvatarCircleBase(mctx, size, '#FCF3CF', '#D4AC0D');
+
+    // Silk saree drape with gold zari
+    mctx.fillStyle = '#881B4C';
+    mctx.beginPath();
+    mctx.moveTo(20, 92);
+    mctx.lineTo(48, 68);
+    mctx.lineTo(76, 92);
+    mctx.closePath();
+    mctx.fill();
+
+    mctx.strokeStyle = '#F1C40F';
+    mctx.lineWidth = 3;
+    mctx.beginPath();
+    mctx.moveTo(25, 92);
+    mctx.lineTo(60, 70);
+    mctx.stroke();
+
+    // Face
+    mctx.fillStyle = '#C88A58';
+    mctx.beginPath();
+    mctx.arc(48, 47, 24, 0, Math.PI * 2);
+    mctx.fill();
+
+    // Silver hair tied in neat bun
+    mctx.fillStyle = '#BDC3C7';
+    mctx.beginPath();
+    mctx.arc(48, 42, 27, Math.PI * 0.9, Math.PI * 2.1);
+    mctx.fill();
+    mctx.beginPath();
+    mctx.arc(48, 22, 10, 0, Math.PI * 2);
+    mctx.fill();
+
+    // Big red vermilion bindi
+    mctx.fillStyle = '#A93226';
+    mctx.beginPath();
+    mctx.arc(48, 38, 3.2, 0, Math.PI * 2);
+    mctx.fill();
+
+    // Gold Jhumka earrings
+    mctx.fillStyle = '#F39C12';
+    mctx.beginPath();
+    mctx.arc(22, 54, 4, 0, Math.PI * 2);
+    mctx.arc(74, 54, 4, 0, Math.PI * 2);
+    mctx.fill();
+
+    // Kind smiling eyes & warm smile
+    mctx.strokeStyle = '#221105';
+    mctx.lineWidth = 1.8;
+    mctx.beginPath();
+    mctx.arc(38, 47, 4, Math.PI * 0.2, Math.PI * 0.8);
+    mctx.arc(58, 47, 4, Math.PI * 0.2, Math.PI * 0.8);
+    mctx.stroke();
+
+    mctx.beginPath();
+    mctx.arc(48, 56, 7.5, 0.2, Math.PI - 0.2);
+    mctx.stroke();
+
+    scene.textures.addCanvas('avatar_meenakshi', mCanvas);
+  }
+
+  private static drawAvatarCircleBase(
+    ctx: CanvasRenderingContext2D,
+    size: number,
+    bgCol: string,
+    borderCol: string
+  ): void {
+    const cx = size / 2;
+    const cy = size / 2;
+    const r = size / 2 - 4;
+
+    ctx.fillStyle = bgCol;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = borderCol;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  /**
+   * Generates Level completion stars, mood emotes, and upgrade icons
+   */
+  private static createProgressionIcons(scene: Phaser.Scene): void {
+    // 1. Gold Star (64x64)
+    const starCanvas = document.createElement('canvas');
+    starCanvas.width = 64;
+    starCanvas.height = 64;
+    const sctx = starCanvas.getContext('2d')!;
+
+    sctx.shadowColor = 'rgba(243, 167, 18, 0.8)';
+    sctx.shadowBlur = 12;
+
+    const starGrad = sctx.createLinearGradient(0, 0, 64, 64);
+    starGrad.addColorStop(0, '#FFF275');
+    starGrad.addColorStop(0.5, '#F39C12');
+    starGrad.addColorStop(1, '#D35400');
+
+    sctx.fillStyle = starGrad;
+    AssetGenerator.drawStarPath(sctx, 32, 32, 5, 24, 11);
+    sctx.fill();
+
+    sctx.shadowColor = 'transparent';
+    sctx.strokeStyle = '#FFFFFF';
+    sctx.lineWidth = 1.5;
+    AssetGenerator.drawStarPath(sctx, 32, 32, 5, 24, 11);
+    sctx.stroke();
+
+    scene.textures.addCanvas('icon_star_gold', starCanvas);
+
+    // 2. Empty Star (64x64)
+    const emptyCanvas = document.createElement('canvas');
+    emptyCanvas.width = 64;
+    emptyCanvas.height = 64;
+    const ectx = emptyCanvas.getContext('2d')!;
+
+    ectx.fillStyle = 'rgba(60, 40, 25, 0.6)';
+    AssetGenerator.drawStarPath(ectx, 32, 32, 5, 24, 11);
+    ectx.fill();
+
+    ectx.strokeStyle = '#D4AF37';
+    ectx.lineWidth = 2;
+    AssetGenerator.drawStarPath(ectx, 32, 32, 5, 24, 11);
+    ectx.stroke();
+
+    scene.textures.addCanvas('icon_star_empty', emptyCanvas);
+
+    // 3. Upgrades Icon (Hammer & Diya)
+    const upCanvas = document.createElement('canvas');
+    upCanvas.width = 48;
+    upCanvas.height = 48;
+    const uctx = upCanvas.getContext('2d')!;
+
+    uctx.fillStyle = '#F39C12';
+    uctx.beginPath();
+    uctx.arc(24, 24, 20, 0, Math.PI * 2);
+    uctx.fill();
+
+    uctx.fillStyle = '#FFF8EE';
+    uctx.font = '22px sans-serif';
+    uctx.textAlign = 'center';
+    uctx.textBaseline = 'middle';
+    uctx.fillText('🏛️', 24, 24);
+
+    scene.textures.addCanvas('icon_upgrades', upCanvas);
+  }
+
+  private static drawStarPath(
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    spikes: number,
+    outerR: number,
+    innerR: number
+  ): void {
+    let rot = (Math.PI / 2) * 3;
+    let x = cx;
+    let y = cy;
+    const step = Math.PI / spikes;
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerR);
+    for (let i = 0; i < spikes; i++) {
+      x = cx + Math.cos(rot) * outerR;
+      y = cy + Math.sin(rot) * outerR;
+      ctx.lineTo(x, y);
+      rot += step;
+
+      x = cx + Math.cos(rot) * innerR;
+      y = cy + Math.sin(rot) * innerR;
+      ctx.lineTo(x, y);
+      rot += step;
+    }
+    ctx.lineTo(cx, cy - outerR);
+    ctx.closePath();
+  }
 }
+
 
