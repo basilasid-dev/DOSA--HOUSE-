@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { RealisticKitchenAssets } from './RealisticKitchenAssets';
 
 /**
  * DOSA HOUSE - Procedural Canvas Asset Generator
@@ -13,6 +14,8 @@ export class AssetGenerator {
     AssetGenerator.createBrassBadgeTexture(scene);
     AssetGenerator.createIcons(scene);
     AssetGenerator.createVignetteOverlay(scene);
+    RealisticKitchenAssets.generateAll(scene);
+    AssetGenerator.createRealisticDosaPhotos(scene);
   }
 
   /**
@@ -491,4 +494,195 @@ export class AssetGenerator {
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
   }
+
+  /**
+   * Generates realistic food photograph cards for dishes that don't have static photographic files
+   */
+  private static createRealisticDosaPhotos(scene: Phaser.Scene): void {
+    // 1. Onion Uthappam Photo Card (400x300)
+    const uCanvas = document.createElement('canvas');
+    uCanvas.width = 400;
+    uCanvas.height = 300;
+    const uctx = uCanvas.getContext('2d')!;
+
+    // Warm rustic wooden background
+    const uWood = uctx.createLinearGradient(0, 0, 400, 300);
+    uWood.addColorStop(0, '#3E2413');
+    uWood.addColorStop(1, '#221208');
+    uctx.fillStyle = uWood;
+    uctx.fillRect(0, 0, 400, 300);
+
+    // Banana Leaf
+    uctx.save();
+    uctx.translate(200, 155);
+    uctx.fillStyle = '#1E8449';
+    uctx.beginPath();
+    uctx.ellipse(0, 0, 185, 120, -0.05, 0, Math.PI * 2);
+    uctx.fill();
+
+    // Leaf vein
+    uctx.strokeStyle = '#52BE80';
+    uctx.lineWidth = 2.5;
+    uctx.beginPath();
+    uctx.moveTo(-180, 0);
+    uctx.lineTo(180, 0);
+    uctx.stroke();
+
+    // Thick fluffy uthappam disc
+    const uthGrad = uctx.createRadialGradient(-20, -10, 15, 0, 0, 95);
+    uthGrad.addColorStop(0, '#FAD7A0');
+    uthGrad.addColorStop(0.6, '#F5B041');
+    uthGrad.addColorStop(0.9, '#D68910');
+    uthGrad.addColorStop(1, '#B9770E');
+
+    uctx.fillStyle = uthGrad;
+    uctx.beginPath();
+    uctx.ellipse(-25, 0, 95, 78, 0, 0, Math.PI * 2);
+    uctx.fill();
+
+    // Caramelized shallots & chillies embedded
+    for (let i = 0; i < 28; i++) {
+      const a = (i * Math.PI * 2) / 28;
+      const d = 12 + (i % 4) * 18;
+      const ox = -25 + Math.cos(a) * d;
+      const oy = Math.sin(a) * (d * 0.8);
+
+      uctx.fillStyle = '#8E44AD';
+      uctx.beginPath();
+      uctx.ellipse(ox, oy, 7, 4.5, i * 0.3, 0, Math.PI * 2);
+      uctx.fill();
+
+      uctx.fillStyle = '#F4ECF7';
+      uctx.beginPath();
+      uctx.ellipse(ox, oy, 4, 2.5, i * 0.3, 0, Math.PI * 2);
+      uctx.fill();
+
+      // Caramelized brown edges
+      uctx.strokeStyle = '#6E2C00';
+      uctx.lineWidth = 1;
+      uctx.stroke();
+    }
+
+    // Green chilli bits & cilantro
+    for (let j = 0; j < 12; j++) {
+      const a = (j * Math.PI * 2) / 12 + 0.4;
+      const d = 15 + (j % 3) * 20;
+      uctx.fillStyle = '#27AE60';
+      uctx.beginPath();
+      uctx.arc(-25 + Math.cos(a) * d, Math.sin(a) * (d * 0.8), 3.5, 0, Math.PI * 2);
+      uctx.fill();
+    }
+
+    // Steel bowls of chutney on the right
+    // Coconut Chutney
+    uctx.fillStyle = '#BDC3C7';
+    uctx.beginPath();
+    uctx.arc(120, -35, 34, 0, Math.PI * 2);
+    uctx.fill();
+    uctx.fillStyle = '#FAFAF5';
+    uctx.beginPath();
+    uctx.arc(120, -35, 29, 0, Math.PI * 2);
+    uctx.fill();
+    uctx.fillStyle = '#111';
+    uctx.beginPath();
+    uctx.arc(116, -37, 1.5, 0, Math.PI * 2);
+    uctx.arc(124, -33, 1.5, 0, Math.PI * 2);
+    uctx.fill();
+    uctx.fillStyle = '#27AE60';
+    uctx.beginPath();
+    uctx.ellipse(120, -35, 6, 3, 0.4, 0, Math.PI * 2);
+    uctx.fill();
+
+    // Tomato Chutney
+    uctx.fillStyle = '#BDC3C7';
+    uctx.beginPath();
+    uctx.arc(120, 42, 34, 0, Math.PI * 2);
+    uctx.fill();
+    uctx.fillStyle = '#C0392B';
+    uctx.beginPath();
+    uctx.arc(120, 42, 29, 0, Math.PI * 2);
+    uctx.fill();
+
+    uctx.restore();
+
+    scene.textures.addCanvas('photo_onion_uthappam', uCanvas);
+
+    // 2. Mysore Royal Masala Dosa Photo Card (400x300)
+    const mCanvas = document.createElement('canvas');
+    mCanvas.width = 400;
+    mCanvas.height = 300;
+    const mctx = mCanvas.getContext('2d')!;
+
+    // Warm table
+    mctx.fillStyle = uWood;
+    mctx.fillRect(0, 0, 400, 300);
+
+    // Banana leaf
+    mctx.save();
+    mctx.translate(200, 150);
+    mctx.fillStyle = '#196F3D';
+    mctx.beginPath();
+    mctx.ellipse(0, 0, 185, 125, 0, 0, Math.PI * 2);
+    mctx.fill();
+
+    // Crisp Golden Folded Mysore Dosa (Triangle with red chutney inside)
+    mctx.fillStyle = '#B9770E';
+    mctx.beginPath();
+    mctx.moveTo(-140, 50);
+    mctx.lineTo(20, -85);
+    mctx.lineTo(80, 60);
+    mctx.closePath();
+    mctx.fill();
+
+    const mDosaGrad = mctx.createLinearGradient(-140, 50, 80, 60);
+    mDosaGrad.addColorStop(0, '#F5B041');
+    mDosaGrad.addColorStop(0.5, '#E59866');
+    mDosaGrad.addColorStop(1, '#D35400');
+    mctx.fillStyle = mDosaGrad;
+    mctx.fill();
+
+    // Red Mysore Chutney Smear visible in fold
+    mctx.fillStyle = '#C0392B';
+    mctx.beginPath();
+    mctx.moveTo(-80, 20);
+    mctx.lineTo(10, -50);
+    mctx.lineTo(30, 25);
+    mctx.closePath();
+    mctx.fill();
+
+    // Potato masala peak
+    mctx.fillStyle = '#F4D03F';
+    mctx.beginPath();
+    mctx.arc(-20, 0, 18, 0, Math.PI * 2);
+    mctx.fill();
+
+    // Dollop of white butter (Makhan)
+    mctx.fillStyle = '#FFFFFF';
+    mctx.beginPath();
+    mctx.arc(-15, -4, 9, 0, Math.PI * 2);
+    mctx.fill();
+
+    // Steel bowls on right
+    mctx.fillStyle = '#BDC3C7';
+    mctx.beginPath();
+    mctx.arc(130, -30, 32, 0, Math.PI * 2);
+    mctx.arc(130, 45, 32, 0, Math.PI * 2);
+    mctx.fill();
+
+    // White chutney & sambar
+    mctx.fillStyle = '#FAFAF5';
+    mctx.beginPath();
+    mctx.arc(130, -30, 27, 0, Math.PI * 2);
+    mctx.fill();
+
+    mctx.fillStyle = '#D35400';
+    mctx.beginPath();
+    mctx.arc(130, 45, 27, 0, Math.PI * 2);
+    mctx.fill();
+
+    mctx.restore();
+
+    scene.textures.addCanvas('photo_mysore_masala', mCanvas);
+  }
 }
+

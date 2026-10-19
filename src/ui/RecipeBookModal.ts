@@ -18,7 +18,7 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
     this.selectedRecipe = RECIPES[0];
 
     // Dark backdrop overlay
-    this.backdrop = scene.add.rectangle(width / 2, height / 2, width, height, 0x0a0502, 0.75);
+    this.backdrop = scene.add.rectangle(width / 2, height / 2, width, height, 0x0a0502, 0.78);
     this.backdrop.setInteractive();
     this.add(this.backdrop);
 
@@ -26,29 +26,29 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
     this.panel = scene.add.container(width / 2, height / 2);
     this.add(this.panel);
 
-    const modalW = 1040;
-    const modalH = 580;
+    const modalW = 1100;
+    const modalH = 610;
 
     // Panel Board (Deep rosewood background with brass border)
     const boardGraphics = scene.add.graphics();
-    // Shadow
-    boardGraphics.fillStyle(0x000000, 0.5);
+    // Drop Shadow
+    boardGraphics.fillStyle(0x000000, 0.55);
     boardGraphics.fillRoundedRect(-modalW / 2 + 10, -modalH / 2 + 14, modalW, modalH, 20);
 
-    // Wood base
+    // Teak Wood base
     boardGraphics.fillStyle(THEME.colors.teakWood, 1);
     boardGraphics.fillRoundedRect(-modalW / 2, -modalH / 2, modalW, modalH, 20);
 
-    // Inner parchment background
+    // Warm Parchment inner surface
     boardGraphics.fillStyle(THEME.colors.creamWarm, 1);
     boardGraphics.fillRoundedRect(-modalW / 2 + 16, -modalH / 2 + 16, modalW - 32, modalH - 32, 14);
 
     // Divider line between left list and right details
-    boardGraphics.lineStyle(2.5, THEME.colors.terracotta, 0.35);
-    boardGraphics.lineBetween(-modalW / 2 + 330, -modalH / 2 + 30, -modalW / 2 + 330, modalH / 2 - 30);
+    boardGraphics.lineStyle(2, THEME.colors.terracotta, 0.35);
+    boardGraphics.lineBetween(-modalW / 2 + 300, -modalH / 2 + 25, -modalW / 2 + 300, modalH / 2 - 25);
 
     // Brass outer border
-    boardGraphics.lineStyle(4, THEME.colors.brass, 0.9);
+    boardGraphics.lineStyle(4, THEME.colors.brass, 0.95);
     boardGraphics.strokeRoundedRect(-modalW / 2, -modalH / 2, modalW, modalH, 20);
 
     // Inner decorative gold line
@@ -58,22 +58,22 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
     this.panel.add(boardGraphics);
 
     // Header Title
-    const headerTitle = scene.add.text(-modalW / 2 + 30, -modalH / 2 + 30, 'ROYAL RECIPE BOOK', {
+    const headerTitle = scene.add.text(-modalW / 2 + 26, -modalH / 2 + 26, 'ROYAL RECIPE BOOK', {
       fontFamily: THEME.fonts.title,
-      fontSize: '28px',
+      fontSize: '26px',
       color: THEME.colors.teakWoodHex
     });
     this.panel.add(headerTitle);
 
-    const subHeader = scene.add.text(-modalW / 2 + 30, -modalH / 2 + 64, 'Master authentic South Indian tawa creations', {
+    const subHeader = scene.add.text(-modalW / 2 + 26, -modalH / 2 + 58, 'Master authentic South Indian tawa creations', {
       fontFamily: THEME.fonts.body,
-      fontSize: '13px',
+      fontSize: '12px',
       color: THEME.colors.terracottaHex
     });
     this.panel.add(subHeader);
 
     // Close Button
-    const closeBtn = scene.add.image(modalW / 2 - 36, -modalH / 2 + 36, 'icon_close');
+    const closeBtn = scene.add.image(modalW / 2 - 32, -modalH / 2 + 32, 'icon_close');
     closeBtn.setInteractive({ useHandCursor: true });
     closeBtn.on('pointerover', () => closeBtn.setScale(1.15));
     closeBtn.on('pointerout', () => closeBtn.setScale(1.0));
@@ -84,11 +84,11 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
     this.panel.add(closeBtn);
 
     // Details Container (Right side)
-    this.detailsContainer = scene.add.container(-modalW / 2 + 355, -modalH / 2 + 40);
+    this.detailsContainer = scene.add.container(-modalW / 2 + 320, -modalH / 2 + 30);
     this.panel.add(this.detailsContainer);
 
     // Build Left Sidebar Recipe List
-    this.buildRecipeList(scene, -modalW / 2 + 30, -modalH / 2 + 100);
+    this.buildRecipeList(scene, -modalW / 2 + 24, -modalH / 2 + 90);
 
     // Render Initial Selected Recipe
     this.renderRecipeDetails(scene);
@@ -110,11 +110,11 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
 
   private buildRecipeList(scene: Phaser.Scene, startX: number, startY: number): void {
     const registry = RecipeService.getInstance();
-    const itemW = 280;
+    const itemW = 255;
     const itemH = 68;
 
     RECIPES.forEach((recipe, idx) => {
-      const y = startY + idx * (itemH + 10);
+      const y = startY + idx * (itemH + 8);
       const itemContainer = scene.add.container(startX, y);
 
       const bg = scene.add.graphics();
@@ -125,24 +125,23 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
       itemContainer.add(bg);
 
       // Recipe Title
-      const title = scene.add.text(14, 12, recipe.name, {
+      const title = scene.add.text(12, 12, recipe.name, {
         fontFamily: THEME.fonts.title,
-        fontSize: '16px',
+        fontSize: '15px',
         color: isSelected ? THEME.colors.creamHex : THEME.colors.teakWoodHex
       });
       itemContainer.add(title);
 
       // Tamil subtitle or tagline
-      const subtitle = scene.add.text(14, 34, isUnlocked ? recipe.tamilName : '🔒 Locked in Kitchen', {
+      const subtitle = scene.add.text(12, 34, isUnlocked ? recipe.tamilName : '🔒 Locked', {
         fontFamily: THEME.fonts.body,
-        fontSize: '12px',
-        fontStyle: isUnlocked ? 'normal' : 'italic',
+        fontSize: '11.5px',
         color: isSelected ? THEME.colors.turmericBrightHex : (isUnlocked ? THEME.colors.curryGreenHex : '#888888')
       });
       itemContainer.add(subtitle);
 
       // Prep Time Badge
-      const timeBadge = scene.add.text(itemW - 14, 14, `⏱ ${recipe.cookingTimeSec}s`, {
+      const timeBadge = scene.add.text(itemW - 12, 14, `⏱ ${recipe.cookingTimeSec}s`, {
         fontFamily: THEME.fonts.body,
         fontSize: '11px',
         fontStyle: 'bold',
@@ -158,9 +157,9 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
         if (recipe.id !== this.selectedRecipe.id) {
           bg.clear();
           bg.fillStyle(THEME.colors.turmeric, 0.25);
-          bg.fillRoundedRect(0, 0, itemW, itemH, 10);
+          bg.fillRoundedRect(0, 0, itemW, itemH, 8);
           bg.lineStyle(1.5, THEME.colors.turmeric, 0.8);
-          bg.strokeRoundedRect(0, 0, itemW, itemH, 10);
+          bg.strokeRoundedRect(0, 0, itemW, itemH, 8);
         }
       });
 
@@ -186,14 +185,14 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
   private drawItemBg(g: Phaser.GameObjects.Graphics, w: number, h: number, selected: boolean, unlocked: boolean): void {
     if (selected) {
       g.fillStyle(THEME.colors.teakWood, 1);
-      g.fillRoundedRect(0, 0, w, h, 10);
+      g.fillRoundedRect(0, 0, w, h, 8);
       g.lineStyle(2, THEME.colors.turmeric, 1);
-      g.strokeRoundedRect(0, 0, w, h, 10);
+      g.strokeRoundedRect(0, 0, w, h, 8);
     } else {
       g.fillStyle(unlocked ? 0xEDE2CF : 0xE0D3BD, 0.9);
-      g.fillRoundedRect(0, 0, w, h, 10);
+      g.fillRoundedRect(0, 0, w, h, 8);
       g.lineStyle(1.5, unlocked ? THEME.colors.terracotta : 0xBBBBBB, 0.4);
-      g.strokeRoundedRect(0, 0, w, h, 10);
+      g.strokeRoundedRect(0, 0, w, h, 8);
     }
   }
 
@@ -210,7 +209,7 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
       const isUnlocked = registry.isUnlocked(recipe.id);
 
       bg.clear();
-      this.drawItemBg(bg, 280, 68, isSelected, isUnlocked);
+      this.drawItemBg(bg, 255, 68, isSelected, isUnlocked);
 
       title.setColor(isSelected ? THEME.colors.creamHex : THEME.colors.teakWoodHex);
       subtitle.setColor(isSelected ? THEME.colors.turmericBrightHex : (isUnlocked ? THEME.colors.curryGreenHex : '#888888'));
@@ -222,128 +221,205 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
     this.detailsContainer.removeAll(true);
     const r = this.selectedRecipe;
 
+    // LEFT SECTION OF DETAILS: Dish Info & Badges
+    const textW = 440;
+
     // Title
     const title = scene.add.text(0, 0, r.name, {
       fontFamily: THEME.fonts.title,
-      fontSize: '28px',
+      fontSize: '26px',
       color: THEME.colors.teakWoodHex
     });
     this.detailsContainer.add(title);
 
     // Tamil Name & Tagline
-    const sub = scene.add.text(0, 36, `${r.tamilName} • "${r.tagline}"`, {
+    const sub = scene.add.text(0, 32, `${r.tamilName} • "${r.tagline}"`, {
       fontFamily: THEME.fonts.body,
-      fontSize: '13px',
+      fontSize: '12px',
       fontStyle: 'bold',
       color: THEME.colors.terracottaHex
     });
     this.detailsContainer.add(sub);
 
-    // Badges Row (Difficulty, Fold Type, Calories)
-    let badgeX = 0;
-    const badgeY = 66;
-
-    // Difficulty Stars
+    // Badges Row
     const diffStars = '★'.repeat(r.difficulty) + '☆'.repeat(3 - r.difficulty);
-    const diffBadge = scene.add.text(badgeX, badgeY, `Difficulty: ${diffStars}`, {
-      fontFamily: THEME.fonts.body,
-      fontSize: '12px',
-      fontStyle: 'bold',
-      color: THEME.colors.turmericGoldHex
-    });
-    this.detailsContainer.add(diffBadge);
-    badgeX += 160;
-
-    // Calories
-    const calBadge = scene.add.text(badgeX, badgeY, `⚡ ${r.calories}`, {
-      fontFamily: THEME.fonts.body,
-      fontSize: '12px',
-      fontStyle: 'bold',
-      color: THEME.colors.curryGreenHex
-    });
-    this.detailsContainer.add(calBadge);
-    badgeX += 120;
-
-    // Fold Style
-    const foldBadge = scene.add.text(badgeX, badgeY, `📐 Fold: ${r.foldType.replace('_', ' ').toUpperCase()}`, {
-      fontFamily: THEME.fonts.body,
-      fontSize: '12px',
-      fontStyle: 'bold',
-      color: THEME.colors.teakWoodHex
-    });
-    this.detailsContainer.add(foldBadge);
+    const badgesText = scene.add.text(
+      0,
+      56,
+      `Difficulty: ${diffStars}   •   ⚡ ${r.calories}   •   📐 Fold: ${r.foldType.replace('_', ' ').toUpperCase()}`,
+      {
+        fontFamily: THEME.fonts.body,
+        fontSize: '11.5px',
+        fontStyle: 'bold',
+        color: THEME.colors.turmericGoldHex
+      }
+    );
+    this.detailsContainer.add(badgesText);
 
     // Description
-    const desc = scene.add.text(0, 96, r.description, {
+    const desc = scene.add.text(0, 80, r.description, {
       fontFamily: THEME.fonts.body,
-      fontSize: '13px',
+      fontSize: '12px',
       color: '#3A271B',
-      wordWrap: { width: 630 },
-      lineSpacing: 4
+      wordWrap: { width: textW },
+      lineSpacing: 3
     });
     this.detailsContainer.add(desc);
 
-    // Section 1: Ingredients Needed
-    const ingTitle = scene.add.text(0, 166, 'ESSENTIAL INGREDIENTS', {
+    // RIGHT SECTION OF DETAILS: Photorealistic Dish Image
+    const photoX = 575;
+    const photoY = 68;
+    const photoW = 270;
+    const photoH = 185;
+
+    // Frame shadow
+    const photoShadow = scene.add.graphics();
+    photoShadow.fillStyle(0x000000, 0.4);
+    photoShadow.fillRoundedRect(photoX - photoW / 2 + 4, photoY - photoH / 2 + 6, photoW, photoH, 10);
+    this.detailsContainer.add(photoShadow);
+
+    // Photo Image (Either loaded photo or generated photo card)
+    const photoKey = scene.textures.exists(r.imageKey) ? r.imageKey : 'photo_masala_dosa';
+    const photoImg = scene.add.image(photoX, photoY, photoKey);
+    photoImg.setDisplaySize(photoW, photoH);
+
+    // Create mask for rounded corners
+    const maskShape = scene.make.graphics();
+    maskShape.fillStyle(0xffffff);
+    maskShape.fillRoundedRect(
+      this.detailsContainer.x + this.panel.x + photoX - photoW / 2,
+      this.detailsContainer.y + this.panel.y + photoY - photoH / 2,
+      photoW,
+      photoH,
+      10
+    );
+    const mask = maskShape.createGeometryMask();
+    photoImg.setMask(mask);
+    this.detailsContainer.add(photoImg);
+
+    // Brass/Gold Border Frame around Photo
+    const photoBorder = scene.add.graphics();
+    photoBorder.lineStyle(3, THEME.colors.brass, 0.95);
+    photoBorder.strokeRoundedRect(photoX - photoW / 2, photoY - photoH / 2, photoW, photoH, 10);
+    this.detailsContainer.add(photoBorder);
+
+    // Caption under photo
+    const photoCap = scene.add.text(photoX, photoY + photoH / 2 + 10, '100% AUTHENTIC RECIPE PHOTOGRAPH', {
+      fontFamily: THEME.fonts.body,
+      fontSize: '9.5px',
+      fontStyle: 'bold',
+      color: THEME.colors.terracottaHex,
+      letterSpacing: 1
+    }).setOrigin(0.5, 0);
+    this.detailsContainer.add(photoCap);
+
+    // SECTION: Essential Ingredients (2 columns)
+    const ingTitle = scene.add.text(0, 142, 'ESSENTIAL INGREDIENTS', {
       fontFamily: THEME.fonts.title,
-      fontSize: '15px',
+      fontSize: '14px',
       color: THEME.colors.terracottaHex
     });
     this.detailsContainer.add(ingTitle);
 
-    let ingY = 192;
-    r.ingredients.forEach((ing) => {
-      const ingRow = scene.add.text(12, ingY, `${ing.icon}  ${ing.name} — ${ing.amountText}`, {
+    let ingY = 166;
+    r.ingredients.forEach((ing, i) => {
+      const colX = (i % 2 === 0) ? 0 : 225;
+      const currentY = ingY + Math.floor(i / 2) * 22;
+
+      const ingText = scene.add.text(colX, currentY, `${ing.icon} ${ing.name}: ${ing.amountText}`, {
         fontFamily: THEME.fonts.body,
-        fontSize: '12.5px',
+        fontSize: '11px',
         color: THEME.colors.teakWoodHex
       });
-      this.detailsContainer.add(ingRow);
-      ingY += 22;
+      this.detailsContainer.add(ingText);
     });
 
-    // Section 2: Preparation & Tawa Steps
-    const stepsTitle = scene.add.text(0, ingY + 12, 'CHEF\'S TAWA TECHNIQUE', {
+    // SECTION: Preparation Stages (Visual 4-Stage Workflow Cards)
+    const prepTitleY = 222;
+    const prepTitle = scene.add.text(0, prepTitleY, 'TAWA PREPARATION STAGES', {
       fontFamily: THEME.fonts.title,
-      fontSize: '15px',
+      fontSize: '14px',
       color: THEME.colors.terracottaHex
     });
-    this.detailsContainer.add(stepsTitle);
+    this.detailsContainer.add(prepTitle);
 
-    let stepY = ingY + 36;
-    r.steps.forEach((st) => {
-      const stepRow = scene.add.text(12, stepY, `Step ${st.stepNumber}: ${st.instruction}`, {
+    const cardW = 175;
+    const cardH = 150;
+    const cardGap = 10;
+    const stagesY = prepTitleY + 24;
+
+    r.prepStages.forEach((stage, idx) => {
+      const cx = idx * (cardW + cardGap);
+      const cardG = scene.add.graphics();
+
+      // Card Background
+      cardG.fillStyle(0xF2E6D0, 0.9);
+      cardG.fillRoundedRect(cx, stagesY, cardW, cardH, 8);
+      cardG.lineStyle(1.5, THEME.colors.brass, 0.5);
+      cardG.strokeRoundedRect(cx, stagesY, cardW, cardH, 8);
+      this.detailsContainer.add(cardG);
+
+      // Stage Header Badge
+      const stageBadge = scene.add.text(cx + 8, stagesY + 8, `STAGE ${stage.stageNumber}`, {
         fontFamily: THEME.fonts.body,
-        fontSize: '12.5px',
-        color: '#2B1C12',
-        wordWrap: { width: 610 }
+        fontSize: '10px',
+        fontStyle: 'bold',
+        color: THEME.colors.terracottaHex
       });
-      this.detailsContainer.add(stepRow);
-      stepY += 22;
+      this.detailsContainer.add(stageBadge);
+
+      // Icon & Stage Title
+      const sTitle = scene.add.text(cx + 8, stagesY + 24, `${stage.icon} ${stage.title}`, {
+        fontFamily: THEME.fonts.title,
+        fontSize: '11px',
+        color: THEME.colors.teakWoodHex,
+        wordWrap: { width: cardW - 16 }
+      });
+      this.detailsContainer.add(sTitle);
+
+      // Detail
+      const sDetail = scene.add.text(cx + 8, stagesY + 48, stage.detail, {
+        fontFamily: THEME.fonts.body,
+        fontSize: '10px',
+        color: '#3A271B',
+        wordWrap: { width: cardW - 16 },
+        lineSpacing: 2
+      });
+      this.detailsContainer.add(sDetail);
+
+      // Pro Tip
+      const sTip = scene.add.text(cx + 8, stagesY + cardH - 32, `💡 Tip: ${stage.proTip}`, {
+        fontFamily: THEME.fonts.body,
+        fontSize: '9.5px',
+        fontStyle: 'italic',
+        color: THEME.colors.curryGreenHex,
+        wordWrap: { width: cardW - 16 }
+      });
+      this.detailsContainer.add(sTip);
     });
 
-    // Section 3: Lore & Cultural Tradition Box
-    const loreBoxY = 415;
+    // SECTION: Cultural Heritage & Lore (Bottom banner)
+    const loreY = 415;
     const loreG = scene.add.graphics();
-    loreG.fillStyle(THEME.colors.curryGreen, 0.1);
-    loreG.fillRoundedRect(0, loreBoxY, 630, 68, 8);
-    loreG.lineStyle(1.5, THEME.colors.curryGreen, 0.4);
-    loreG.strokeRoundedRect(0, loreBoxY, 630, 68, 8);
+    loreG.fillStyle(THEME.colors.curryGreen, 0.08);
+    loreG.fillRoundedRect(0, loreY, 730, 48, 8);
+    loreG.lineStyle(1.5, THEME.colors.curryGreen, 0.35);
+    loreG.strokeRoundedRect(0, loreY, 730, 48, 8);
     this.detailsContainer.add(loreG);
 
-    const loreTitle = scene.add.text(12, loreBoxY + 8, 'SOUTH INDIAN HERITAGE & LORE', {
+    const loreTitle = scene.add.text(10, loreY + 6, 'SOUTH INDIAN CULINARY HERITAGE', {
       fontFamily: THEME.fonts.title,
-      fontSize: '12px',
+      fontSize: '10.5px',
       color: THEME.colors.curryGreenHex
     });
     this.detailsContainer.add(loreTitle);
 
-    const loreText = scene.add.text(12, loreBoxY + 28, r.lore, {
+    const loreText = scene.add.text(10, loreY + 24, r.lore, {
       fontFamily: THEME.fonts.body,
-      fontSize: '11.5px',
+      fontSize: '10px',
       color: '#26442C',
       fontStyle: 'italic',
-      wordWrap: { width: 605 }
+      wordWrap: { width: 710 }
     });
     this.detailsContainer.add(loreText);
   }

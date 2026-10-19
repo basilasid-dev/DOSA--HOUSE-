@@ -74,6 +74,9 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('restaurant_bg', '/assets/restaurant_bg.jpg');
     this.load.image('dosa_platter', '/assets/dosa_platter.jpg');
     this.load.image('kitchen_station', '/assets/kitchen_station.jpg');
+    this.load.image('photo_masala_dosa', '/assets/photo_masala_dosa.jpg');
+    this.load.image('photo_plain_roast', '/assets/photo_plain_roast.jpg');
+    this.load.image('photo_ghee_podi', '/assets/photo_ghee_podi.jpg');
   }
 
   create(): void {

@@ -8,6 +8,7 @@ export interface IngredientRequirement {
   icon: string;
   required: boolean;
   amountText: string;
+  culinaryRole?: string;
 }
 
 export type DosaFoldType = 'triangle' | 'cylinder' | 'half_moon' | 'open_face';
@@ -17,6 +18,14 @@ export interface CookingStep {
   instruction: string;
   targetTemp?: 'low' | 'medium' | 'high';
   durationSeconds?: number;
+}
+
+export interface PreparationStage {
+  stageNumber: number;
+  title: string;
+  detail: string;
+  icon: string;
+  proTip: string;
 }
 
 export interface Recipe {
@@ -29,8 +38,10 @@ export interface Recipe {
   cookingTimeSec: number;
   calories: string;
   foldType: DosaFoldType;
+  imageKey: string;
   ingredients: IngredientRequirement[];
   steps: CookingStep[];
+  prepStages: PreparationStage[];
   condiments: string[];
   lore: string;
   unlockedByDefault: boolean;
@@ -39,9 +50,13 @@ export interface Recipe {
 export interface CustomerOrder {
   id: string;
   customerName: string;
+  tableNumber: number;
   recipeId: string;
+  recipeName: string;
+  dishImageKey: string;
   crispinessPreference: 'soft' | 'medium' | 'extra_crispy';
   extraGhee: boolean;
+  specialNote: string;
   timeLimitSec: number;
   rewardCoins: number;
 }
