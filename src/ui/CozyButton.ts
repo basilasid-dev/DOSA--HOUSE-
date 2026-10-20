@@ -67,61 +67,41 @@ export class CozyButton extends Phaser.GameObjects.Container {
     this.setSize(buttonWidth, buttonHeight);
     this.setInteractive({ useHandCursor: true });
 
+    let isPressed = false;
+
     // Events
     this.on('pointerover', () => {
       this.isHovered = true;
       this.bgImage.setTexture('ui_wood_button_hover');
       this.labelText.setColor(THEME.colors.turmericBrightHex);
       SoundFX.getInstance().playHover();
-
-      scene.tweens.killTweensOf(this);
-      scene.tweens.add({
-        targets: this,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 160,
-        ease: 'Back.easeOut'
-      });
+      this.setScale(1.04);
     });
 
     this.on('pointerout', () => {
       this.isHovered = false;
       this.bgImage.setTexture('ui_wood_button');
       this.labelText.setColor(THEME.colors.creamHex);
-
-      scene.tweens.killTweensOf(this);
-      scene.tweens.add({
-        targets: this,
-        scaleX: 1.0,
-        scaleY: 1.0,
-        duration: 160,
-        ease: 'Quad.easeOut'
-      });
+      if (!isPressed) {
+        this.setScale(1.0);
+      }
     });
 
     this.on('pointerdown', () => {
+      isPressed = true;
       SoundFX.getInstance().playClick();
-      scene.tweens.add({
-        targets: this,
-        scaleX: 0.96,
-        scaleY: 0.96,
-        duration: 80,
-        ease: 'Quad.easeIn'
-      });
+      this.setScale(0.96);
     });
 
-    this.on('pointerup', () => {
-      scene.tweens.add({
-        targets: this,
-        scaleX: this.isHovered ? 1.05 : 1.0,
-        scaleY: this.isHovered ? 1.05 : 1.0,
-        duration: 120,
-        ease: 'Back.easeOut',
-        onComplete: () => {
-          config.onClick();
-        }
-      });
-    });
+    const triggerClick = () => {
+      if (!isPressed) return;
+      isPressed = false;
+      this.setScale(1.0);
+      config.onClick();
+    };
+
+    this.on('pointerup', triggerClick);
+    this.on('pointerupoutside', triggerClick);
 
     scene.add.existing(this);
   }

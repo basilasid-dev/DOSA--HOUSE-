@@ -73,11 +73,6 @@ export class MainMenuScene extends Phaser.Scene {
 
     // 9. Bottom Footer Lore Tagline
     this.createFooter(width, height);
-
-    // 10. Start gentle cozy drone ambience on first user touch/click
-    this.input.once('pointerdown', () => {
-      sound.startCozyAmbience();
-    });
   }
 
   /**
@@ -283,15 +278,30 @@ export class MainMenuScene extends Phaser.Scene {
    * Interactive wooden navigation buttons column
    */
   private createNavigationMenu(x: number, y: number): void {
-    const spacing = 76;
+    const spacing = 65;
+    const currentDay = UpgradeService.getInstance().getCurrentDay();
 
-    // 1. Play Game Button
+    // 1. Play Game Button (Launches kitchen immediately!)
     new CozyButton(this, {
       x,
-      y: y - spacing * 1.5,
+      y: y - spacing * 2,
       text: 'Play Game',
-      subText: 'Enter Kitchen & Fire up Tawa',
+      subText: `Enter Kitchen • Day ${currentDay} ★`,
       iconTexture: 'icon_play',
+      width: 350,
+      onClick: () => {
+        if (this.isModalOpen) return;
+        this.startGame(currentDay);
+      }
+    });
+
+    // 2. Select Shift / Day Button
+    new CozyButton(this, {
+      x,
+      y: y - spacing * 1,
+      text: 'Select Day',
+      subText: '5 Progressive Service Shifts',
+      iconTexture: 'icon_upgrades',
       width: 350,
       onClick: () => {
         if (this.isModalOpen) return;
@@ -299,10 +309,10 @@ export class MainMenuScene extends Phaser.Scene {
       }
     });
 
-    // 2. Recipe Book Button
+    // 3. Recipe Book Button
     new CozyButton(this, {
       x,
-      y: y - spacing * 0.5,
+      y,
       text: 'Recipe Book',
       subText: '10 Master Recipes, Steps & Lore',
       iconTexture: 'icon_recipe_book',
@@ -313,10 +323,10 @@ export class MainMenuScene extends Phaser.Scene {
       }
     });
 
-    // 3. Upgrades Button
+    // 4. Upgrades Button
     new CozyButton(this, {
       x,
-      y: y + spacing * 0.5,
+      y: y + spacing * 1,
       text: 'Upgrades & Decor',
       subText: 'Kitchen Equipment & Heritage Charm',
       iconTexture: 'icon_upgrades',
@@ -327,10 +337,10 @@ export class MainMenuScene extends Phaser.Scene {
       }
     });
 
-    // 4. Settings Button
+    // 5. Settings Button
     new CozyButton(this, {
       x,
-      y: y + spacing * 1.5,
+      y: y + spacing * 2,
       text: 'Settings',
       subText: 'Audio, Visuals & Credits',
       iconTexture: 'icon_settings',
@@ -450,11 +460,10 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   private startGame(day?: number): void {
-    if (day !== undefined) {
-      UpgradeService.getInstance().setCurrentDay(day);
-    }
+    const targetDay = day !== undefined ? day : UpgradeService.getInstance().getCurrentDay();
+    UpgradeService.getInstance().setCurrentDay(targetDay);
     SoundFX.getInstance().playSizzle(0.9);
-    this.cameras.main.fadeOut(350, 26, 14, 7);
+    this.cameras.main.fadeOut(250, 26, 14, 7);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.start('GameScene');
     });

@@ -72,6 +72,7 @@ export class LevelSelectModal extends Phaser.GameObjects.Container {
 
     // Close Button
     const closeBtn = scene.add.image(modalW / 2 - 32, -modalH / 2 + 32, 'icon_close');
+    closeBtn.setDisplaySize(38, 38);
     closeBtn.setInteractive({ useHandCursor: true });
     closeBtn.on('pointerover', () => closeBtn.setScale(1.15));
     closeBtn.on('pointerout', () => closeBtn.setScale(1.0));
@@ -188,21 +189,30 @@ export class LevelSelectModal extends Phaser.GameObjects.Container {
       const btnContainer = scene.add.container(0, btnY);
 
       if (isUnlocked) {
+        card.setSize(cardW, cardH);
+        card.setInteractive({ useHandCursor: true });
+        card.on('pointerdown', () => {
+          sound.playClick();
+          this.closeModal(() => {
+            onSelectLevel(lvl.day);
+          });
+        });
+
         const btnBg = scene.add.graphics();
         btnBg.fillStyle(THEME.colors.terracotta, 1);
-        btnBg.fillRoundedRect(-65, -13, 130, 26, 6);
-        btnBg.lineStyle(1.2, THEME.colors.brassBright, 1);
-        btnBg.strokeRoundedRect(-65, -13, 130, 26, 6);
+        btnBg.fillRoundedRect(-70, -15, 140, 30, 7);
+        btnBg.lineStyle(1.4, THEME.colors.brassBright, 1);
+        btnBg.strokeRoundedRect(-70, -15, 140, 30, 7);
         btnContainer.add(btnBg);
 
         const btnTxt = scene.add.text(0, 0, 'START SERVICE ➔', {
           fontFamily: THEME.fonts.title,
-          fontSize: '10px',
+          fontSize: '11px',
           color: THEME.colors.creamHex
         }).setOrigin(0.5);
         btnContainer.add(btnTxt);
 
-        btnContainer.setSize(130, 26);
+        btnContainer.setSize(140, 30);
         btnContainer.setInteractive({ useHandCursor: true });
         btnContainer.on('pointerdown', () => {
           sound.playClick();

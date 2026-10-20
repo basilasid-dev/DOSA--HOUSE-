@@ -544,104 +544,10 @@ export class SoundFX {
   }
 
   /**
-   * Cozy South Indian drone / ambient warm chord with procedural Carnatic melody (Raga Mohanam)
+   * Background drone sound disabled per user request
    */
   public startCozyAmbience(): void {
-    if (this.isAmbienceRunning) return;
-    const ctx = this.initCtx();
-    if (!ctx) return;
-
-    this.isAmbienceRunning = true;
-
-    const droneGain = ctx.createGain();
-    droneGain.gain.setValueAtTime(this.muted ? 0 : this.musicVolume * 0.14, ctx.currentTime);
-
-    const rootOsc = ctx.createOscillator();
-    rootOsc.type = 'triangle';
-    rootOsc.frequency.setValueAtTime(146.83, ctx.currentTime); // D3 (warm tanpura Sa)
-
-    const fifthOsc = ctx.createOscillator();
-    fifthOsc.type = 'sine';
-    fifthOsc.frequency.setValueAtTime(220.0, ctx.currentTime); // A3 (Pa)
-
-    const octaveOsc = ctx.createOscillator();
-    octaveOsc.type = 'sine';
-    octaveOsc.frequency.setValueAtTime(293.66, ctx.currentTime); // D4 (Taara Sa)
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(450, ctx.currentTime);
-
-    rootOsc.connect(filter);
-    fifthOsc.connect(filter);
-    octaveOsc.connect(filter);
-    filter.connect(droneGain);
-    droneGain.connect(ctx.destination);
-
-    rootOsc.start();
-    fifthOsc.start();
-    octaveOsc.start();
-
-    this.ambientOsc = rootOsc;
-    this.ambientFifth = fifthOsc;
-    this.ambientGain = droneGain;
-
-    // Raga Mohanam pentatonic scale notes (Sa, Ri, Ga, Pa, Dha, Sa')
-    // D4: 293.66, E4: 329.63, F#4: 369.99, A4: 440.00, B4: 493.88, D5: 587.33, E5: 659.25
-    const mohanamNotes = [293.66, 329.63, 369.99, 440.00, 493.88, 587.33, 659.25];
-    const phrases = [
-      [0, 1, 2, 3],        // Sa Ri Ga Pa
-      [3, 4, 3, 2],        // Pa Dha Pa Ga
-      [2, 1, 0, 1, 2],     // Ga Ri Sa Ri Ga
-      [3, 4, 5, 4, 3],     // Pa Dha Sa' Dha Pa
-      [5, 4, 3, 2, 0],     // Sa' Dha Pa Ga Sa
-      [2, 3, 4, 5, 6, 5]   // Ga Pa Dha Sa' Ri' Sa'
-    ];
-
-    let phraseIdx = 0;
-    const playNextPhrase = () => {
-      if (!this.isAmbienceRunning || !this.ctx || this.muted || this.musicVolume <= 0.02) return;
-      
-      const phrase = phrases[phraseIdx % phrases.length];
-      phraseIdx++;
-
-      phrase.forEach((noteIdx, i) => {
-        const noteFreq = mohanamNotes[noteIdx];
-        const noteStart = this.ctx!.currentTime + i * 0.42;
-
-        const osc = this.ctx!.createOscillator();
-        const noteGain = this.ctx!.createGain();
-        const noteFilter = this.ctx!.createBiquadFilter();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(noteFreq, noteStart);
-        // Subtle ornamentation / gamaka slide
-        osc.frequency.linearRampToValueAtTime(noteFreq * 1.01, noteStart + 0.15);
-        osc.frequency.linearRampToValueAtTime(noteFreq, noteStart + 0.35);
-
-        noteFilter.type = 'lowpass';
-        noteFilter.frequency.setValueAtTime(1200, noteStart);
-
-        // Gentle flute-like envelope
-        noteGain.gain.setValueAtTime(0.0001, noteStart);
-        noteGain.gain.exponentialRampToValueAtTime(0.09, noteStart + 0.08);
-        noteGain.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.55);
-
-        osc.connect(noteFilter);
-        noteFilter.connect(noteGain);
-        if (this.ambientGain) {
-          noteGain.connect(this.ambientGain);
-        } else {
-          noteGain.connect(this.ctx!.destination);
-        }
-
-        osc.start(noteStart);
-        osc.stop(noteStart + 0.6);
-      });
-    };
-
-    // Play gentle phrase every ~3.2 seconds
-    this.melodyIntervalId = window.setInterval(playNextPhrase, 3200);
+    this.stopCozyAmbience();
   }
 
   public stopCozyAmbience(): void {
