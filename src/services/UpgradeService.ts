@@ -1,4 +1,5 @@
 import { RestaurantUpgrade, LevelDefinition } from '../types/recipe';
+import { RecipeService } from './RecipeRegistry';
 
 interface SaveData {
   playerCoins: number;
@@ -34,44 +35,44 @@ export class UpgradeService {
     {
       day: 2,
       serviceTitle: 'Fiery Gunpowder Rush',
-      tagline: 'Diners demand aromatic Ghee Podi Roast with explosive spice!',
+      tagline: 'Diners demand aromatic Ghee Podi Roast and Giant Paper Roasts!',
       requiredCustomers: 4,
       targetScore: 360,
       targetEarnings: 380,
-      allowedRecipes: ['plain_roast', 'masala_dosa', 'ghee_podi_dosa'],
+      allowedRecipes: ['plain_roast', 'masala_dosa', 'ghee_podi_dosa', 'paper_roast'],
       patienceMultiplier: 0.95,
       unlockedByDefault: false
     },
     {
       day: 3,
-      serviceTitle: 'Evening Uthappam Crowd',
-      tagline: 'Caramelized shallots and chillies sizzle on the seasoned tawa.',
+      serviceTitle: 'Evening Uthappam & Mysore Rush',
+      tagline: 'Caramelized shallots and Mysore red garlic chutney sizzle on the tawa.',
       requiredCustomers: 5,
       targetScore: 480,
       targetEarnings: 520,
-      allowedRecipes: ['plain_roast', 'masala_dosa', 'ghee_podi_dosa', 'onion_uthappam'],
+      allowedRecipes: ['plain_roast', 'masala_dosa', 'ghee_podi_dosa', 'onion_uthappam', 'mysore_masala'],
       patienceMultiplier: 0.90,
       unlockedByDefault: false
     },
     {
       day: 4,
-      serviceTitle: 'Royal Palace Dinner Feast',
-      tagline: 'Food connoisseurs arrive for decadent buttery roasts and savory fillings.',
+      serviceTitle: 'Royal Chettinad & Cheese Feast',
+      tagline: 'Spicy pepper paneer and molten Amul cheese dosas packed with flavor.',
       requiredCustomers: 6,
       targetScore: 620,
       targetEarnings: 700,
-      allowedRecipes: ['plain_roast', 'masala_dosa', 'ghee_podi_dosa', 'onion_uthappam'],
+      allowedRecipes: ['plain_roast', 'masala_dosa', 'ghee_podi_dosa', 'onion_uthappam', 'mysore_masala', 'chettinad_paneer', 'cheese_chilli'],
       patienceMultiplier: 0.85,
       unlockedByDefault: false
     },
     {
       day: 5,
       serviceTitle: 'Grand Harvest Tiffin Festival',
-      tagline: 'The ultimate culinary rush. Every table is packed!',
+      tagline: 'The ultimate culinary festival. All 10 heritage recipes are in high demand!',
       requiredCustomers: 8,
       targetScore: 850,
       targetEarnings: 950,
-      allowedRecipes: ['plain_roast', 'masala_dosa', 'ghee_podi_dosa', 'onion_uthappam'],
+      allowedRecipes: ['plain_roast', 'masala_dosa', 'ghee_podi_dosa', 'onion_uthappam', 'mysore_masala', 'paper_roast', 'chettinad_paneer', 'cheese_chilli', 'rava_crispy', 'jaggery_coconut'],
       patienceMultiplier: 0.80,
       unlockedByDefault: false
     }
@@ -236,7 +237,7 @@ export class UpgradeService {
     return this.dayHighScores[day] || 0;
   }
 
-  public completeLevel(day: number, starsEarned: number, score: number, earnings: number): void {
+  public completeLevel(day: number, starsEarned: number, score: number, earnings: number): string[] {
     // Record highest stars and score
     this.dayStars[day] = Math.max(this.dayStars[day] || 0, starsEarned);
     this.dayHighScores[day] = Math.max(this.dayHighScores[day] || 0, score);
@@ -247,6 +248,10 @@ export class UpgradeService {
     }
 
     this.save();
+
+    // Unlock recipes for next day progression
+    const newlyUnlocked = RecipeService.getInstance().unlockForDay(day + 1);
+    return newlyUnlocked;
   }
 
   // ==================== UPGRADE PURCHASING ====================

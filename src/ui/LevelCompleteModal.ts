@@ -79,6 +79,9 @@ export class LevelCompleteModal extends Phaser.GameObjects.Container {
     const starY = -modalH / 2 + 120;
     const starKeys = ['icon_star_gold', 'icon_star_gold', 'icon_star_gold'];
 
+    // Play South Indian victory fanfare on completion!
+    sound.playCelebrationFanfare();
+
     for (let s = 0; s < 3; s++) {
       const starX = (s - 1) * starSpacing;
       const isEarned = s < r.starsEarned;
@@ -91,11 +94,11 @@ export class LevelCompleteModal extends Phaser.GameObjects.Container {
         targets: star,
         scaleX: isEarned ? 1.15 : 0.85,
         scaleY: isEarned ? 1.15 : 0.85,
-        delay: 200 + s * 180,
-        duration: 350,
+        delay: 350 + s * 220,
+        duration: 380,
         ease: 'Back.easeOut',
         onStart: () => {
-          if (isEarned) sound.playHover();
+          if (isEarned) sound.playStarPop(s + 1);
         }
       });
     }
@@ -165,8 +168,38 @@ export class LevelCompleteModal extends Phaser.GameObjects.Container {
       rowY += 27;
     });
 
+    // Newly Unlocked Recipes Celebration Banner
+    if (r.newlyUnlockedRecipes && r.newlyUnlockedRecipes.length > 0) {
+      const unlockBanner = scene.add.container(0, modalH / 2 - 145);
+      const uBg = scene.add.graphics();
+      uBg.fillStyle(THEME.colors.curryGreen, 0.95);
+      uBg.fillRoundedRect(-250, -13, 500, 26, 7);
+      uBg.lineStyle(1.5, THEME.colors.turmericBright, 0.9);
+      uBg.strokeRoundedRect(-250, -13, 500, 26, 7);
+      unlockBanner.add(uBg);
+
+      const uTxt = scene.add.text(0, 0, `📖 NEW RECIPE UNLOCKED: ${r.newlyUnlockedRecipes.join(', ')}!`, {
+        fontFamily: THEME.fonts.title,
+        fontSize: '10.5px',
+        color: '#FFFFFF'
+      }).setOrigin(0.5);
+      unlockBanner.add(uTxt);
+
+      this.panel.add(unlockBanner);
+
+      scene.tweens.add({
+        targets: unlockBanner,
+        scaleX: 1.03,
+        scaleY: 1.03,
+        duration: 800,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+    }
+
     // Overall Cooking Score Badge
-    const scoreBadge = scene.add.container(0, modalH / 2 - 110);
+    const scoreBadge = scene.add.container(0, modalH / 2 - 105);
     const scoreG = scene.add.graphics();
     scoreG.fillStyle(THEME.colors.teakWood, 0.95);
     scoreG.fillRoundedRect(-150, -18, 300, 36, 10);

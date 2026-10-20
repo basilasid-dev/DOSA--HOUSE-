@@ -11,15 +11,45 @@ export class SoundFX {
   private sfxVolume: number = 0.7;
   private musicVolume: number = 0.5;
   private ambientOsc: OscillatorNode | null = null;
+  private ambientFifth: OscillatorNode | null = null;
   private ambientGain: GainNode | null = null;
   private sizzleNode: AudioBufferSourceNode | null = null;
   private sizzleGain: GainNode | null = null;
+  private melodyIntervalId: number | null = null;
+  private isAmbienceRunning: boolean = false;
+  private readonly SETTINGS_KEY = 'DOSA_HOUSE_SETTINGS_V1';
+
+  private constructor() {
+    this.loadSettings();
+  }
 
   public static getInstance(): SoundFX {
     if (!SoundFX.instance) {
       SoundFX.instance = new SoundFX();
     }
     return SoundFX.instance;
+  }
+
+  private loadSettings(): void {
+    try {
+      const raw = localStorage.getItem(this.SETTINGS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.sfxVolume === 'number') this.sfxVolume = Phaser.Math.Clamp(parsed.sfxVolume, 0, 1);
+        if (typeof parsed.musicVolume === 'number') this.musicVolume = Phaser.Math.Clamp(parsed.musicVolume, 0, 1);
+        if (typeof parsed.muted === 'boolean') this.muted = parsed.muted;
+      }
+    } catch {}
+  }
+
+  private saveSettings(): void {
+    try {
+      localStorage.setItem(this.SETTINGS_KEY, JSON.stringify({
+        sfxVolume: this.sfxVolume,
+        musicVolume: this.musicVolume,
+        muted: this.muted
+      }));
+    } catch {}
   }
 
   private initCtx(): AudioContext | null {
@@ -37,10 +67,11 @@ export class SoundFX {
 
   public setMuted(muted: boolean): void {
     this.muted = muted;
+    this.saveSettings();
     if (muted && this.ambientGain) {
       this.ambientGain.gain.setValueAtTime(0, this.ctx ? this.ctx.currentTime : 0);
     } else if (!muted && this.ambientGain && this.ctx) {
-      this.ambientGain.gain.setValueAtTime(this.musicVolume * 0.15, this.ctx.currentTime);
+      this.ambientGain.gain.setValueAtTime(this.musicVolume * 0.16, this.ctx.currentTime);
     }
   }
 
@@ -55,6 +86,7 @@ export class SoundFX {
 
   public setSFXVolume(vol: number): void {
     this.sfxVolume = Math.max(0, Math.min(1, vol));
+    this.saveSettings();
   }
 
   public getSFXVolume(): number {
@@ -63,8 +95,9 @@ export class SoundFX {
 
   public setMusicVolume(vol: number): void {
     this.musicVolume = Math.max(0, Math.min(1, vol));
+    this.saveSettings();
     if (this.ambientGain && this.ctx && !this.muted) {
-      this.ambientGain.gain.setValueAtTime(this.musicVolume * 0.15, this.ctx.currentTime);
+      this.ambientGain.gain.setValueAtTime(this.musicVolume * 0.16, this.ctx.currentTime);
     }
   }
 
@@ -511,38 +544,255 @@ export class SoundFX {
   }
 
   /**
-   * Cozy South Indian drone / ambient warm chord
+   * Cozy South Indian drone / ambient warm chord with procedural Carnatic melody (Raga Mohanam)
    */
   public startCozyAmbience(): void {
-    if (this.ambientOsc) return;
+    if (this.isAmbienceRunning) return;
     const ctx = this.initCtx();
     if (!ctx) return;
 
+    this.isAmbienceRunning = true;
+
     const droneGain = ctx.createGain();
-    droneGain.gain.setValueAtTime(this.muted ? 0 : this.musicVolume * 0.08, ctx.currentTime);
+    droneGain.gain.setValueAtTime(this.muted ? 0 : this.musicVolume * 0.14, ctx.currentTime);
 
     const rootOsc = ctx.createOscillator();
     rootOsc.type = 'triangle';
-    rootOsc.frequency.setValueAtTime(146.83, ctx.currentTime); // D3 (warm tanpura key)
+    rootOsc.frequency.setValueAtTime(146.83, ctx.currentTime); // D3 (warm tanpura Sa)
 
     const fifthOsc = ctx.createOscillator();
     fifthOsc.type = 'sine';
-    fifthOsc.frequency.setValueAtTime(220.0, ctx.currentTime); // A3
+    fifthOsc.frequency.setValueAtTime(220.0, ctx.currentTime); // A3 (Pa)
+
+    const octaveOsc = ctx.createOscillator();
+    octaveOsc.type = 'sine';
+    octaveOsc.frequency.setValueAtTime(293.66, ctx.currentTime); // D4 (Taara Sa)
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(400, ctx.currentTime);
+    filter.frequency.setValueAtTime(450, ctx.currentTime);
 
     rootOsc.connect(filter);
     fifthOsc.connect(filter);
+    octaveOsc.connect(filter);
     filter.connect(droneGain);
     droneGain.connect(ctx.destination);
 
     rootOsc.start();
     fifthOsc.start();
+    octaveOsc.start();
 
     this.ambientOsc = rootOsc;
+    this.ambientFifth = fifthOsc;
     this.ambientGain = droneGain;
+
+    // Raga Mohanam pentatonic scale notes (Sa, Ri, Ga, Pa, Dha, Sa')
+    // D4: 293.66, E4: 329.63, F#4: 369.99, A4: 440.00, B4: 493.88, D5: 587.33, E5: 659.25
+    const mohanamNotes = [293.66, 329.63, 369.99, 440.00, 493.88, 587.33, 659.25];
+    const phrases = [
+      [0, 1, 2, 3],        // Sa Ri Ga Pa
+      [3, 4, 3, 2],        // Pa Dha Pa Ga
+      [2, 1, 0, 1, 2],     // Ga Ri Sa Ri Ga
+      [3, 4, 5, 4, 3],     // Pa Dha Sa' Dha Pa
+      [5, 4, 3, 2, 0],     // Sa' Dha Pa Ga Sa
+      [2, 3, 4, 5, 6, 5]   // Ga Pa Dha Sa' Ri' Sa'
+    ];
+
+    let phraseIdx = 0;
+    const playNextPhrase = () => {
+      if (!this.isAmbienceRunning || !this.ctx || this.muted || this.musicVolume <= 0.02) return;
+      
+      const phrase = phrases[phraseIdx % phrases.length];
+      phraseIdx++;
+
+      phrase.forEach((noteIdx, i) => {
+        const noteFreq = mohanamNotes[noteIdx];
+        const noteStart = this.ctx!.currentTime + i * 0.42;
+
+        const osc = this.ctx!.createOscillator();
+        const noteGain = this.ctx!.createGain();
+        const noteFilter = this.ctx!.createBiquadFilter();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(noteFreq, noteStart);
+        // Subtle ornamentation / gamaka slide
+        osc.frequency.linearRampToValueAtTime(noteFreq * 1.01, noteStart + 0.15);
+        osc.frequency.linearRampToValueAtTime(noteFreq, noteStart + 0.35);
+
+        noteFilter.type = 'lowpass';
+        noteFilter.frequency.setValueAtTime(1200, noteStart);
+
+        // Gentle flute-like envelope
+        noteGain.gain.setValueAtTime(0.0001, noteStart);
+        noteGain.gain.exponentialRampToValueAtTime(0.09, noteStart + 0.08);
+        noteGain.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.55);
+
+        osc.connect(noteFilter);
+        noteFilter.connect(noteGain);
+        if (this.ambientGain) {
+          noteGain.connect(this.ambientGain);
+        } else {
+          noteGain.connect(this.ctx!.destination);
+        }
+
+        osc.start(noteStart);
+        osc.stop(noteStart + 0.6);
+      });
+    };
+
+    // Play gentle phrase every ~3.2 seconds
+    this.melodyIntervalId = window.setInterval(playNextPhrase, 3200);
+  }
+
+  public stopCozyAmbience(): void {
+    if (this.melodyIntervalId !== null) {
+      clearInterval(this.melodyIntervalId);
+      this.melodyIntervalId = null;
+    }
+    if (this.ambientOsc) {
+      try { this.ambientOsc.stop(); } catch {}
+      this.ambientOsc = null;
+    }
+    if (this.ambientFifth) {
+      try { this.ambientFifth.stop(); } catch {}
+      this.ambientFifth = null;
+    }
+    this.isAmbienceRunning = false;
+  }
+
+  /**
+   * Ascending combo streak chime
+   */
+  public playCombo(comboCount: number): void {
+    if (this.muted) return;
+    const ctx = this.initCtx();
+    if (!ctx) return;
+
+    const baseFreq = 440 * Math.pow(1.12, Math.min(6, comboCount));
+    const notes = [baseFreq, baseFreq * 1.25, baseFreq * 1.5]; // Major chord burst
+
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const start = ctx.currentTime + idx * 0.07;
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, start);
+
+      gain.gain.setValueAtTime(0.24 * this.sfxVolume, start);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(start);
+      osc.stop(start + 0.38);
+    });
+  }
+
+  /**
+   * Sparkling star award pop for level complete modal
+   */
+  public playStarPop(starIndex: number): void {
+    if (this.muted) return;
+    const ctx = this.initCtx();
+    if (!ctx) return;
+
+    const pitches = [1046.5, 1318.5, 1568.0]; // C6, E6, G6
+    const freq = pitches[(starIndex - 1) % pitches.length] || 1046.5;
+
+    const osc = ctx.createOscillator();
+    const oscHarmonic = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+    oscHarmonic.type = 'triangle';
+    oscHarmonic.frequency.setValueAtTime(freq * 2, ctx.currentTime);
+
+    gain.gain.setValueAtTime(0.26 * this.sfxVolume, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+
+    osc.connect(gain);
+    oscHarmonic.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(ctx.currentTime);
+    oscHarmonic.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.48);
+    oscHarmonic.stop(ctx.currentTime + 0.48);
+  }
+
+  /**
+   * Triumphant South Indian celebration fanfare (Day complete / Level cleared)
+   */
+  public playCelebrationFanfare(): void {
+    if (this.muted) return;
+    const ctx = this.initCtx();
+    if (!ctx) return;
+
+    // Pentatonic ascending fanfare flourish (Mohanam)
+    const notes = [293.66, 369.99, 440.0, 587.33, 739.99, 880.0];
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const start = ctx.currentTime + idx * 0.11;
+      const dur = idx === notes.length - 1 ? 0.9 : 0.28;
+
+      osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(freq, start);
+
+      gain.gain.setValueAtTime(0.28 * this.sfxVolume, start);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(start);
+      osc.stop(start + dur + 0.05);
+    });
+  }
+
+  /**
+   * Nuanced topping sprinkle sound based on ingredient category
+   */
+  public playToppingSprinkle(category: 'powder' | 'paste' | 'chunk' | 'liquid' = 'chunk'): void {
+    if (this.muted) return;
+    const ctx = this.initCtx();
+    if (!ctx) return;
+
+    if (category === 'powder') {
+      // Hissing fine powder shower (podi, pepper)
+      const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        data[i] = (Math.random() * 2 - 1) * 0.25;
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(3200, ctx.currentTime);
+      filter.Q.setValueAtTime(3.0, ctx.currentTime);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.22 * this.sfxVolume, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      noise.start(ctx.currentTime);
+    } else if (category === 'paste') {
+      // Wet spatula smear glide (mysore paste)
+      this.playSwirlGlide();
+    } else if (category === 'liquid') {
+      this.playGheeDrizzle();
+    } else {
+      // Soft gentle drop (masala, paneer, shallots, cheese)
+      this.playToppingAdd();
+    }
   }
 
   /**

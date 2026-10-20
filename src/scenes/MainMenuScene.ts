@@ -378,6 +378,35 @@ export class MainMenuScene extends Phaser.Scene {
       this.soundIcon?.setTexture(isMuted ? 'icon_sound_off' : 'icon_sound_on');
       if (!isMuted) sound.playClick();
     });
+
+    // Fullscreen Toggle Button (essential for smartphone immersion)
+    const fsButton = this.add.container(width - 98, 45);
+    const fsBg = this.add.graphics();
+    fsBg.fillStyle(THEME.colors.teakWood, 0.85);
+    fsBg.fillCircle(0, 0, 22);
+    fsBg.lineStyle(2, THEME.colors.brass, 0.8);
+    fsBg.strokeCircle(0, 0, 22);
+    fsButton.add(fsBg);
+
+    const fsIcon = this.add.text(0, 0, '⛶', {
+      fontFamily: THEME.fonts.body,
+      fontSize: '18px',
+      color: THEME.colors.turmericBrightHex
+    }).setOrigin(0.5);
+    fsButton.add(fsIcon);
+
+    fsButton.setSize(44, 44);
+    fsButton.setInteractive({ useHandCursor: true });
+    fsButton.on('pointerover', () => fsButton.setScale(1.1));
+    fsButton.on('pointerout', () => fsButton.setScale(1.0));
+    fsButton.on('pointerdown', () => {
+      sound.playClick();
+      if (this.scale.isFullscreen) {
+        this.scale.stopFullscreen();
+      } else {
+        this.scale.startFullscreen();
+      }
+    });
   }
 
   /**
@@ -433,9 +462,16 @@ export class MainMenuScene extends Phaser.Scene {
 
   private openRecipeBook(): void {
     this.isModalOpen = true;
-    new RecipeBookModal(this, () => {
-      this.isModalOpen = false;
-    });
+    new RecipeBookModal(
+      this,
+      () => {
+        this.isModalOpen = false;
+      },
+      (recipe) => {
+        this.isModalOpen = false;
+        this.startGame();
+      }
+    );
   }
 
   private openUpgrades(): void {

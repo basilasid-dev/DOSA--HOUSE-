@@ -4,6 +4,7 @@ import { SoundFX } from '../audio/SoundFX';
 import { CozyButton } from '../ui/CozyButton';
 import { SteamEmitter } from '../ui/SteamParticles';
 import { RecipeBookModal } from '../ui/RecipeBookModal';
+import { SettingsModal } from '../ui/SettingsModal';
 import { UpgradesModal } from '../ui/UpgradesModal';
 import { LevelCompleteModal } from '../ui/LevelCompleteModal';
 import { LevelSelectModal } from '../ui/LevelSelectModal';
@@ -12,7 +13,7 @@ import { UpgradeService } from '../services/UpgradeService';
 import { CustomerOrder, LevelResult, Recipe, LevelDefinition } from '../types/recipe';
 import { DosaSurface, DosaCookingQuality } from '../mechanics/DosaSurface';
 import { QualityReviewModal } from '../ui/QualityReviewModal';
-import { RECIPES } from '../services/RecipeRegistry';
+import { RECIPES, RecipeService } from '../services/RecipeRegistry';
 
 interface CustomerTemplate {
   customerName: string;
@@ -82,30 +83,82 @@ const CUSTOMER_ROSTER: CustomerTemplate[] = [
     rewardCoins: 110
   },
   {
-    customerName: 'Anand',
-    customerTitle: 'College Student',
-    avatarKey: 'avatar_karthik',
-    recipeId: 'masala_dosa',
-    recipeName: 'Classic Masala Dosa',
-    dishImageKey: 'photo_masala_dosa',
-    crispinessPreference: 'medium',
-    extraGhee: false,
-    specialNote: 'Crispy triangle fold with hot potato filling',
-    timeLimitSec: 60,
-    rewardCoins: 115
-  },
-  {
-    customerName: 'Deepa',
-    customerTitle: 'Express Commuter',
-    avatarKey: 'avatar_priya',
-    recipeId: 'plain_roast',
-    recipeName: 'Plain Ghee Roast',
-    dishImageKey: 'photo_plain_roast',
+    customerName: 'Manoj & Table',
+    customerTitle: 'Weekend Family Feast',
+    avatarKey: 'avatar_venkatesh',
+    recipeId: 'paper_roast',
+    recipeName: 'Giant Paper Ghee Roast',
+    dishImageKey: 'photo_paper_roast',
     crispinessPreference: 'extra_crispy',
     extraGhee: true,
-    specialNote: 'Quick crisp cylindrical roll for morning tiffin',
-    timeLimitSec: 45,
-    rewardCoins: 100
+    specialNote: 'A monumental 3-foot crispy golden telescope for the table!',
+    timeLimitSec: 80,
+    rewardCoins: 180
+  },
+  {
+    customerName: 'Rajesh',
+    customerTitle: 'Royal Connoisseur',
+    avatarKey: 'avatar_karthik',
+    recipeId: 'mysore_masala',
+    recipeName: 'Mysore Royal Masala Dosa',
+    dishImageKey: 'photo_mysore_masala',
+    crispinessPreference: 'extra_crispy',
+    extraGhee: true,
+    specialNote: 'Fiery red garlic chutney smear with spiced potatoes!',
+    timeLimitSec: 70,
+    rewardCoins: 165
+  },
+  {
+    customerName: 'Dr. Subramanian',
+    customerTitle: 'Chettinad Gourmet',
+    avatarKey: 'avatar_venkatesh',
+    recipeId: 'chettinad_paneer',
+    recipeName: 'Chettinad Spicy Paneer Dosa',
+    dishImageKey: 'photo_chettinad_paneer',
+    crispinessPreference: 'medium',
+    extraGhee: true,
+    specialNote: 'Crumbled malai paneer in black pepper & fennel masala!',
+    timeLimitSec: 75,
+    rewardCoins: 190
+  },
+  {
+    customerName: 'Divya',
+    customerTitle: 'Street Food Connoisseur',
+    avatarKey: 'avatar_priya',
+    recipeId: 'cheese_chilli',
+    recipeName: 'Amul Cheese & Green Chilli Dosa',
+    dishImageKey: 'photo_cheese_chilli',
+    crispinessPreference: 'medium',
+    extraGhee: true,
+    specialNote: 'A mountain of melted gooey cheese with spicy green chillies!',
+    timeLimitSec: 60,
+    rewardCoins: 175
+  },
+  {
+    customerName: 'Srinivasan',
+    customerTitle: 'Lacy Tiffin Master',
+    avatarKey: 'avatar_karthik',
+    recipeId: 'rava_crispy',
+    recipeName: 'Lacy Rava Cumin Roast',
+    dishImageKey: 'photo_rava_crispy',
+    crispinessPreference: 'extra_crispy',
+    extraGhee: true,
+    specialNote: 'Wafer-thin golden honeycomb lattice with whole cumin seeds!',
+    timeLimitSec: 70,
+    rewardCoins: 160
+  },
+  {
+    customerName: 'Revathi',
+    customerTitle: 'Festival Sweet Tooth',
+    avatarKey: 'avatar_meenakshi',
+    recipeId: 'jaggery_coconut',
+    recipeName: 'Sweet Jaggery Coconut Dosa',
+    dishImageKey: 'photo_jaggery_coconut',
+    crispinessPreference: 'medium',
+    extraGhee: true,
+    specialNote: 'Caramelized dark palm jaggery with sweet fresh coconut & cardamom!',
+    timeLimitSec: 55,
+    rewardCoins: 150
   }
 ];
 
@@ -152,6 +205,20 @@ export class GameScene extends Phaser.Scene {
   private plateGlow?: Phaser.GameObjects.Graphics;
   private isDosaPlated: boolean = false;
   private dragProxy?: Phaser.GameObjects.Container;
+  private serveBarBtnBg?: Phaser.GameObjects.Graphics;
+  private serveBarBtnTxt?: Phaser.GameObjects.Text;
+  private serveBarBtnContainer?: Phaser.GameObjects.Container;
+
+  // Combo & Streak Visual Effects
+  private comboCount: number = 0;
+  private lastServeTime: number = 0;
+  private readonly comboWindowMs: number = 28000;
+
+  // Right Toppings Station State & Recipe Target Override
+  private toppingsPageIndex: number = 0;
+  private toppingsItemsContainer?: Phaser.GameObjects.Container;
+  private toppingsPageToggleText?: Phaser.GameObjects.Text;
+  private recipeOverride: Recipe | null = null;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -169,6 +236,8 @@ export class GameScene extends Phaser.Scene {
     this.levelScoreTotal = 0;
     this.levelEarningsTotal = 0;
     this.perfectDosasCount = 0;
+    this.comboCount = 0;
+    this.lastServeTime = 0;
     this.slotOrders = [null, null, null];
     this.orderCards = [null, null, null];
     this.isDosaPlated = false;
@@ -176,15 +245,30 @@ export class GameScene extends Phaser.Scene {
 
     this.cameras.main.fadeIn(350, 26, 14, 7);
 
-    // 2. Kitchen Station Illustrated Backdrop
-    const bg = this.add.image(width / 2, height / 2, 'kitchen_station');
+    // 2. Restaurant Dining Hall Illustrated Backdrop (Same model as Main Menu)
+    const bg = this.add.image(width / 2, height / 2, 'restaurant_bg');
     bg.setDisplaySize(width, height);
-    bg.setAlpha(0.72);
+    bg.setAlpha(0.68);
 
-    // Warm Vignette Overlay
+    // Warm Teak Color Grading
+    const warmOverlay = this.add.graphics();
+    warmOverlay.fillStyle(THEME.colors.teakWood, 0.35);
+    warmOverlay.fillRect(0, 0, width, height);
+
+    // Polished Kitchen Workbench Countertop for Cast-Iron Tawa & Prep Stations
+    const counterTop = this.add.graphics();
+    counterTop.fillStyle(THEME.colors.darkWood, 0.72);
+    counterTop.fillRect(0, 222, width, height - 222);
+    // Brass counter trim
+    counterTop.lineStyle(2.5, THEME.colors.brass, 0.8);
+    counterTop.lineBetween(0, 222, width, 222);
+    counterTop.lineStyle(1, THEME.colors.turmericGold, 0.45);
+    counterTop.lineBetween(0, 225, width, 225);
+
+    // Vignette
     const vignette = this.add.image(width / 2, height / 2, 'fx_vignette');
     vignette.setDisplaySize(width, height);
-    vignette.setAlpha(0.7);
+    vignette.setAlpha(0.75);
 
     // 3. Top Kitchen Status HUD (y: 0..48) with Level Goals
     this.createKitchenHUD(width);
@@ -271,24 +355,31 @@ export class GameScene extends Phaser.Scene {
     hudContainer.add(this.cashText);
 
     // Upgrades Button
-    const upBtn = this.add.container(width - 455, 24);
+    const upBtn = this.add.container(width - 505, 24);
     const upBg = this.add.graphics();
     upBg.fillStyle(THEME.colors.lightWood, 0.9);
-    upBg.fillRoundedRect(-50, -14, 100, 28, 6);
+    upBg.fillRoundedRect(-46, -14, 92, 28, 6);
     upBg.lineStyle(1.2, THEME.colors.brass, 0.8);
-    upBg.strokeRoundedRect(-50, -14, 100, 28, 6);
+    upBg.strokeRoundedRect(-46, -14, 92, 28, 6);
     upBtn.add(upBg);
 
     const upTxt = this.add.text(0, 0, '🏛️ UPGRADES', {
       fontFamily: THEME.fonts.body,
-      fontSize: '9.5px',
+      fontSize: '9px',
       fontStyle: 'bold',
       color: THEME.colors.turmericBrightHex
     }).setOrigin(0.5);
     upBtn.add(upTxt);
 
-    upBtn.setSize(100, 28);
+    upBtn.setSize(92, 28);
     upBtn.setInteractive({ useHandCursor: true });
+    upBtn.on('pointerover', () => {
+      SoundFX.getInstance().playHover();
+      this.tweens.add({ targets: upBtn, scaleX: 1.06, scaleY: 1.06, duration: 100, ease: 'Back.easeOut' });
+    });
+    upBtn.on('pointerout', () => {
+      this.tweens.add({ targets: upBtn, scaleX: 1.0, scaleY: 1.0, duration: 100, ease: 'Quad.easeOut' });
+    });
     upBtn.on('pointerdown', () => {
       SoundFX.getInstance().playClick();
       this.openUpgrades();
@@ -296,24 +387,31 @@ export class GameScene extends Phaser.Scene {
     hudContainer.add(upBtn);
 
     // Days / Levels Select button
-    const dayBtn = this.add.container(width - 345, 24);
+    const dayBtn = this.add.container(width - 405, 24);
     const dayBg = this.add.graphics();
     dayBg.fillStyle(THEME.colors.lightWood, 0.9);
-    dayBg.fillRoundedRect(-45, -14, 90, 28, 6);
+    dayBg.fillRoundedRect(-43, -14, 86, 28, 6);
     dayBg.lineStyle(1.2, THEME.colors.brass, 0.8);
-    dayBg.strokeRoundedRect(-45, -14, 90, 28, 6);
+    dayBg.strokeRoundedRect(-43, -14, 86, 28, 6);
     dayBtn.add(dayBg);
 
     const dayTxt = this.add.text(0, 0, '🗓️ DAYS (5)', {
       fontFamily: THEME.fonts.body,
-      fontSize: '9.5px',
+      fontSize: '9px',
       fontStyle: 'bold',
       color: THEME.colors.turmericGoldHex
     }).setOrigin(0.5);
     dayBtn.add(dayTxt);
 
-    dayBtn.setSize(90, 28);
+    dayBtn.setSize(86, 28);
     dayBtn.setInteractive({ useHandCursor: true });
+    dayBtn.on('pointerover', () => {
+      SoundFX.getInstance().playHover();
+      this.tweens.add({ targets: dayBtn, scaleX: 1.06, scaleY: 1.06, duration: 100, ease: 'Back.easeOut' });
+    });
+    dayBtn.on('pointerout', () => {
+      this.tweens.add({ targets: dayBtn, scaleX: 1.0, scaleY: 1.0, duration: 100, ease: 'Quad.easeOut' });
+    });
     dayBtn.on('pointerdown', () => {
       SoundFX.getInstance().playClick();
       this.openLevelSelect();
@@ -321,62 +419,134 @@ export class GameScene extends Phaser.Scene {
     hudContainer.add(dayBtn);
 
     // Recipe Guide button
-    const bookBtn = this.add.container(width - 240, 24);
+    const bookBtn = this.add.container(width - 310, 24);
     const bookBg = this.add.graphics();
     bookBg.fillStyle(THEME.colors.lightWood, 0.9);
-    bookBg.fillRoundedRect(-45, -14, 90, 28, 6);
+    bookBg.fillRoundedRect(-43, -14, 86, 28, 6);
     bookBg.lineStyle(1.2, THEME.colors.brass, 0.8);
-    bookBg.strokeRoundedRect(-45, -14, 90, 28, 6);
+    bookBg.strokeRoundedRect(-43, -14, 86, 28, 6);
     bookBtn.add(bookBg);
 
     const bookTxt = this.add.text(0, 0, '📖 RECIPES', {
       fontFamily: THEME.fonts.body,
-      fontSize: '9.5px',
+      fontSize: '9px',
       fontStyle: 'bold',
       color: THEME.colors.creamHex
     }).setOrigin(0.5);
     bookBtn.add(bookTxt);
 
-    bookBtn.setSize(90, 28);
+    bookBtn.setSize(86, 28);
     bookBtn.setInteractive({ useHandCursor: true });
+    bookBtn.on('pointerover', () => {
+      SoundFX.getInstance().playHover();
+      this.tweens.add({ targets: bookBtn, scaleX: 1.06, scaleY: 1.06, duration: 100, ease: 'Back.easeOut' });
+    });
+    bookBtn.on('pointerout', () => {
+      this.tweens.add({ targets: bookBtn, scaleX: 1.0, scaleY: 1.0, duration: 100, ease: 'Quad.easeOut' });
+    });
     bookBtn.on('pointerdown', () => {
       SoundFX.getInstance().playClick();
       this.openRecipeBook();
     });
     hudContainer.add(bookBtn);
 
+    // Settings Modal button
+    const setBtn = this.add.container(width - 215, 24);
+    const setBg = this.add.graphics();
+    setBg.fillStyle(THEME.colors.lightWood, 0.9);
+    setBg.fillRoundedRect(-43, -14, 86, 28, 6);
+    setBg.lineStyle(1.2, THEME.colors.brass, 0.8);
+    setBg.strokeRoundedRect(-43, -14, 86, 28, 6);
+    setBtn.add(setBg);
+
+    const setTxt = this.add.text(0, 0, '⚙️ SETTINGS', {
+      fontFamily: THEME.fonts.body,
+      fontSize: '9px',
+      fontStyle: 'bold',
+      color: THEME.colors.turmericBrightHex
+    }).setOrigin(0.5);
+    setBtn.add(setTxt);
+
+    setBtn.setSize(86, 28);
+    setBtn.setInteractive({ useHandCursor: true });
+    setBtn.on('pointerover', () => {
+      SoundFX.getInstance().playHover();
+      this.tweens.add({ targets: setBtn, scaleX: 1.06, scaleY: 1.06, duration: 100, ease: 'Back.easeOut' });
+    });
+    setBtn.on('pointerout', () => {
+      this.tweens.add({ targets: setBtn, scaleX: 1.0, scaleY: 1.0, duration: 100, ease: 'Quad.easeOut' });
+    });
+    setBtn.on('pointerdown', () => {
+      SoundFX.getInstance().playClick();
+      this.openSettings();
+    });
+    hudContainer.add(setBtn);
+
     // Audio quick toggle
     const sound = SoundFX.getInstance();
-    const soundBtn = this.add.container(width - 155, 24);
+    const soundBtn = this.add.container(width - 138, 24);
     const soundIcon = this.add.image(0, 0, sound.isMuted() ? 'icon_sound_off' : 'icon_sound_on').setScale(0.65);
     soundBtn.add(soundIcon);
     soundBtn.setSize(30, 30);
     soundBtn.setInteractive({ useHandCursor: true });
+    soundBtn.on('pointerover', () => {
+      this.tweens.add({ targets: soundBtn, scaleX: 1.15, scaleY: 1.15, duration: 100 });
+    });
+    soundBtn.on('pointerout', () => {
+      this.tweens.add({ targets: soundBtn, scaleX: 1.0, scaleY: 1.0, duration: 100 });
+    });
     soundBtn.on('pointerdown', () => {
       const isMuted = sound.toggleMute();
       soundIcon.setTexture(isMuted ? 'icon_sound_off' : 'icon_sound_on');
+      if (!isMuted) sound.playClick();
     });
     hudContainer.add(soundBtn);
 
+    // Fullscreen quick toggle (for smartphone immersion)
+    const fsBtn = this.add.container(width - 110, 24);
+    const fsTxt = this.add.text(0, 0, '⛶', {
+      fontSize: '15px',
+      color: THEME.colors.turmericBrightHex
+    }).setOrigin(0.5);
+    fsBtn.add(fsTxt);
+    fsBtn.setSize(24, 24);
+    fsBtn.setInteractive({ useHandCursor: true });
+    fsBtn.on('pointerdown', () => {
+      SoundFX.getInstance().playClick();
+      if (this.scale.isFullscreen) {
+        this.scale.stopFullscreen();
+      } else {
+        this.scale.startFullscreen();
+      }
+    });
+    hudContainer.add(fsBtn);
+
     // Main Menu Return Button
-    const menuBtn = this.add.container(width - 70, 24);
+    const menuBtn = this.add.container(width - 65, 24);
     const menuBg = this.add.graphics();
     menuBg.fillStyle(THEME.colors.terracotta, 0.9);
-    menuBg.fillRoundedRect(-45, -14, 90, 28, 6);
+    menuBg.fillRoundedRect(-40, -14, 80, 28, 6);
     menuBg.lineStyle(1.2, THEME.colors.brassBright, 0.8);
-    menuBg.strokeRoundedRect(-45, -14, 90, 28, 6);
+    menuBg.strokeRoundedRect(-40, -14, 80, 28, 6);
     menuBtn.add(menuBg);
 
     const menuTxt = this.add.text(0, 0, '🚪 MENU', {
       fontFamily: THEME.fonts.body,
-      fontSize: '10px',
+      fontSize: '9.5px',
       fontStyle: 'bold',
       color: THEME.colors.creamHex
     }).setOrigin(0.5);
     menuBtn.add(menuTxt);
 
-    menuBtn.setSize(90, 28);
+    menuBtn.setSize(80, 28);
     menuBtn.setInteractive({ useHandCursor: true });
+    menuBtn.on('pointerover', () => {
+      SoundFX.getInstance().playHover();
+      this.tweens.add({ targets: menuBtn, scaleX: 1.06, scaleY: 1.06, duration: 100, ease: 'Back.easeOut' });
+    });
+    menuBtn.on('pointerout', () => {
+      this.tweens.add({ targets: menuBtn, scaleX: 1.0, scaleY: 1.0, duration: 100, ease: 'Quad.easeOut' });
+    });
     menuBtn.on('pointerdown', () => {
       SoundFX.getInstance().playClick();
       this.cameras.main.fadeOut(300, 26, 14, 7);
@@ -414,9 +584,13 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(delayMs, () => {
       const upgradeService = UpgradeService.getInstance();
 
-      // Filter roster by allowed recipes for this day's shift
-      const allowedTemplates = CUSTOMER_ROSTER.filter(t => this.levelDef.allowedRecipes.includes(t.recipeId));
-      const pool = allowedTemplates.length > 0 ? allowedTemplates : CUSTOMER_ROSTER;
+      // Filter roster by allowed recipes for this day's shift and unlocked recipes
+      const recipeService = RecipeService.getInstance();
+      const allowedTemplates = CUSTOMER_ROSTER.filter(t =>
+        this.levelDef.allowedRecipes.includes(t.recipeId) && recipeService.isUnlocked(t.recipeId)
+      );
+      const unlockedTemplates = CUSTOMER_ROSTER.filter(t => recipeService.isUnlocked(t.recipeId));
+      const pool = allowedTemplates.length > 0 ? allowedTemplates : (unlockedTemplates.length > 0 ? unlockedTemplates : CUSTOMER_ROSTER);
       const template = pool[this.rosterIndex % pool.length];
       this.rosterIndex++;
 
@@ -588,6 +762,10 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
+    this.dosaSurface.setOnPlatedClick(() => {
+      this.servePlatedDosaToTarget();
+    });
+
     // Real-time Steam Particles rising from the hot iron surface
     new SteamEmitter(this, x - 15, y - 20, 150);
 
@@ -652,9 +830,9 @@ export class GameScene extends Phaser.Scene {
       const btn = this.add.container(btnX, 0);
       const bg = this.add.graphics();
       bg.fillStyle(color, 0.95);
-      bg.fillRoundedRect(-btnW / 2, -13, btnW, 26, 6);
-      bg.lineStyle(1.2, THEME.colors.brassBright, 0.85);
-      bg.strokeRoundedRect(-btnW / 2, -13, btnW, 26, 6);
+      bg.fillRoundedRect(-btnW / 2, -14, btnW, 28, 6);
+      bg.lineStyle(1.4, THEME.colors.brassBright, 0.9);
+      bg.strokeRoundedRect(-btnW / 2, -14, btnW, 28, 6);
       btn.add(bg);
 
       const txt = this.add.text(0, 0, label, {
@@ -665,20 +843,34 @@ export class GameScene extends Phaser.Scene {
       }).setOrigin(0.5);
       btn.add(txt);
 
-      btn.setSize(btnW, 26);
+      btn.setSize(btnW, 32);
       btn.setInteractive({ useHandCursor: true });
+      btn.on('pointerover', () => {
+        SoundFX.getInstance().playHover();
+        this.tweens.add({ targets: btn, scaleX: 1.06, scaleY: 1.06, duration: 110, ease: 'Back.easeOut' });
+      });
+      btn.on('pointerout', () => {
+        this.tweens.add({ targets: btn, scaleX: 1.0, scaleY: 1.0, duration: 110, ease: 'Quad.easeOut' });
+      });
       btn.on('pointerdown', () => {
+        SoundFX.getInstance().playClick();
         this.tweens.add({ targets: btn, scaleX: 0.92, scaleY: 0.92, duration: 70, yoyo: true });
         onClick();
       });
-      return btn;
+      return { btn, bg, txt };
     };
 
-    barContainer.add(makeBarBtn(-148, 68, '🔄 FLIP', THEME.colors.teakWood, () => this.handleFlipAction()));
-    barContainer.add(makeBarBtn(-75, 72, '🧈 +GHEE', THEME.colors.turmeric, () => this.handleGheeAction()));
-    barContainer.add(makeBarBtn(0, 72, '🌯 FOLD', THEME.colors.terracotta, () => this.handleFoldAction()));
-    barContainer.add(makeBarBtn(78, 76, '🍽️ SERVE', THEME.colors.curryGreen, () => this.handlePlateAction()));
-    barContainer.add(makeBarBtn(152, 66, '🧹 RESET', THEME.colors.teakWood, () => this.handleResetAction()));
+    barContainer.add(makeBarBtn(-148, 68, '🔄 FLIP', THEME.colors.teakWood, () => this.handleFlipAction()).btn);
+    barContainer.add(makeBarBtn(-75, 72, '🧈 +GHEE', THEME.colors.turmeric, () => this.handleGheeAction()).btn);
+    barContainer.add(makeBarBtn(0, 72, '🌯 FOLD', THEME.colors.terracotta, () => this.handleFoldAction()).btn);
+
+    const serveBtnObj = makeBarBtn(78, 86, '🍽️ SERVE', THEME.colors.curryGreen, () => this.handlePlateAction());
+    this.serveBarBtnContainer = serveBtnObj.btn;
+    this.serveBarBtnBg = serveBtnObj.bg;
+    this.serveBarBtnTxt = serveBtnObj.txt;
+    barContainer.add(serveBtnObj.btn);
+
+    barContainer.add(makeBarBtn(154, 66, '🧹 RESET', THEME.colors.teakWood, () => this.handleResetAction()).btn);
 
     stationContainer.add(barContainer);
   }
@@ -796,7 +988,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Right Station: Brass Ghee Pot & Toppings Rack (Potato Masala, Podi, Shallots)
+   * Right Station: Brass Ghee Pot & Toppings Rack (2 Pages: Traditional & Specialty)
    */
   private createRightToppingsStation(x: number, y: number): void {
     const rackContainer = this.add.container(x, y);
@@ -810,78 +1002,133 @@ export class GameScene extends Phaser.Scene {
 
     const title = this.add.text(0, -120, 'GHEE & TOPPINGS', {
       fontFamily: THEME.fonts.title,
-      fontSize: '12.5px',
+      fontSize: '12px',
       color: THEME.colors.turmericBrightHex
     }).setOrigin(0.5);
     rackContainer.add(title);
 
-    // Ghee Pot
-    const gheePot = this.add.image(-42, -65, 'realistic_ghee_cup');
-    gheePot.setScale(0.7);
-    gheePot.setInteractive({ useHandCursor: true });
-    gheePot.on('pointerdown', () => {
-      this.handleGheeAction();
-      this.tweens.add({ targets: gheePot, scaleX: 0.76, scaleY: 0.76, duration: 80, yoyo: true });
-    });
-    rackContainer.add(gheePot);
+    // Page Toggle Button
+    const toggleBtn = this.add.container(0, -98);
+    const toggleBg = this.add.graphics();
+    toggleBg.fillStyle(THEME.colors.terracotta, 0.95);
+    toggleBg.fillRoundedRect(-92, -11, 184, 22, 6);
+    toggleBg.lineStyle(1.2, THEME.colors.brassBright, 0.9);
+    toggleBg.strokeRoundedRect(-92, -11, 184, 22, 6);
+    toggleBtn.add(toggleBg);
 
-    const gheeLabel = this.add.text(12, -65, 'DESI GHEE\n(Molten butter)', {
-      fontFamily: THEME.fonts.body,
-      fontSize: '9.5px',
-      color: THEME.colors.turmericBrightHex
-    }).setOrigin(0, 0.5);
-    rackContainer.add(gheeLabel);
-
-    // Potato Masala
-    const potBowl = this.add.image(-42, -5, 'realistic_potato_masala_bowl');
-    potBowl.setScale(0.65);
-    potBowl.setInteractive({ useHandCursor: true });
-    potBowl.on('pointerdown', () => {
-      this.handleToppingAction('potato_masala');
-      this.tweens.add({ targets: potBowl, scaleX: 0.72, scaleY: 0.72, duration: 80, yoyo: true });
-    });
-    rackContainer.add(potBowl);
-
-    const potLabel = this.add.text(12, -5, 'POTATO MASALA\n(Turmeric spiced)', {
-      fontFamily: THEME.fonts.body,
-      fontSize: '9.5px',
+    this.toppingsPageToggleText = this.add.text(0, 0, '◀ TRADITIONAL (1/2) ▶', {
+      fontFamily: THEME.fonts.title,
+      fontSize: '9px',
       color: THEME.colors.creamHex
-    }).setOrigin(0, 0.5);
-    rackContainer.add(potLabel);
+    }).setOrigin(0.5);
+    toggleBtn.add(this.toppingsPageToggleText);
 
-    // Gunpowder Podi
-    const podiBowl = this.add.image(-42, 54, 'realistic_podi_bowl');
-    podiBowl.setScale(0.65);
-    podiBowl.setInteractive({ useHandCursor: true });
-    podiBowl.on('pointerdown', () => {
-      this.handleToppingAction('idli_podi');
-      this.tweens.add({ targets: podiBowl, scaleX: 0.72, scaleY: 0.72, duration: 80, yoyo: true });
+    toggleBtn.setSize(184, 22);
+    toggleBtn.setInteractive({ useHandCursor: true });
+    toggleBtn.on('pointerdown', () => {
+      SoundFX.getInstance().playClick();
+      this.toppingsPageIndex = this.toppingsPageIndex === 0 ? 1 : 0;
+      this.renderToppingsPage();
     });
-    rackContainer.add(podiBowl);
+    rackContainer.add(toggleBtn);
 
-    const podiLabel = this.add.text(12, 54, 'IDLI PODI\n(Gunpowder)', {
-      fontFamily: THEME.fonts.body,
-      fontSize: '9.5px',
-      color: THEME.colors.terracottaBrightHex
-    }).setOrigin(0, 0.5);
-    rackContainer.add(podiLabel);
+    // Inner items container
+    this.toppingsItemsContainer = this.add.container(0, 0);
+    rackContainer.add(this.toppingsItemsContainer);
 
-    // Shallots & Chillies
-    const shallotBowl = this.add.image(-42, 108, 'realistic_shallots_bowl');
-    shallotBowl.setScale(0.6);
-    shallotBowl.setInteractive({ useHandCursor: true });
-    shallotBowl.on('pointerdown', () => {
-      this.handleToppingAction('shallots');
-      this.tweens.add({ targets: shallotBowl, scaleX: 0.66, scaleY: 0.66, duration: 80, yoyo: true });
-    });
-    rackContainer.add(shallotBowl);
+    this.renderToppingsPage();
+  }
 
-    const shallotLabel = this.add.text(12, 108, 'SHALLOTS\n& Chillies', {
-      fontFamily: THEME.fonts.body,
-      fontSize: '9.5px',
-      color: THEME.colors.creamHex
-    }).setOrigin(0, 0.5);
-    rackContainer.add(shallotLabel);
+  private renderToppingsPage(): void {
+    if (!this.toppingsItemsContainer) return;
+    this.toppingsItemsContainer.removeAll(true);
+
+    if (this.toppingsPageToggleText) {
+      this.toppingsPageToggleText.setText(
+        this.toppingsPageIndex === 0 ? '◀ TRADITIONAL (1/2) ▶' : '◀ SPECIALTY (2/2) ▶'
+      );
+    }
+
+    const makeItem = (
+      y: number,
+      imgKey: string,
+      scale: number,
+      title: string,
+      subtitle: string,
+      titleColor: string,
+      onClick: () => void
+    ) => {
+      const itemContainer = this.add.container(0, y);
+
+      const bowl = this.add.image(-42, 0, imgKey);
+      bowl.setScale(scale);
+      bowl.setInteractive({ useHandCursor: true });
+      bowl.on('pointerdown', () => {
+        onClick();
+        this.tweens.add({ targets: bowl, scaleX: scale * 1.1, scaleY: scale * 1.1, duration: 80, yoyo: true });
+      });
+      itemContainer.add(bowl);
+
+      const label = this.add.text(12, 0, `${title}\n(${subtitle})`, {
+        fontFamily: THEME.fonts.body,
+        fontSize: '9.5px',
+        color: titleColor
+      }).setOrigin(0, 0.5);
+      label.setInteractive({ useHandCursor: true });
+      label.on('pointerdown', () => {
+        onClick();
+        this.tweens.add({ targets: bowl, scaleX: scale * 1.1, scaleY: scale * 1.1, duration: 80, yoyo: true });
+      });
+      itemContainer.add(label);
+
+      return itemContainer;
+    };
+
+    if (this.toppingsPageIndex === 0) {
+      // Page 1: Traditional
+      this.toppingsItemsContainer.add(
+        makeItem(-62, 'realistic_ghee_cup', 0.68, 'DESI GHEE', 'Molten butter', THEME.colors.turmericBrightHex, () => {
+          this.handleGheeAction();
+        })
+      );
+      this.toppingsItemsContainer.add(
+        makeItem(-10, 'realistic_potato_masala_bowl', 0.62, 'POTATO MASALA', 'Turmeric spiced', THEME.colors.creamHex, () => {
+          this.handleToppingAction('potato_masala');
+        })
+      );
+      this.toppingsItemsContainer.add(
+        makeItem(42, 'realistic_podi_bowl', 0.62, 'IDLI PODI', 'Gunpowder spices', THEME.colors.terracottaBrightHex, () => {
+          this.handleToppingAction('idli_podi');
+        })
+      );
+      this.toppingsItemsContainer.add(
+        makeItem(94, 'realistic_shallots_bowl', 0.58, 'SHALLOTS', '& Green chillies', THEME.colors.creamHex, () => {
+          this.handleToppingAction('shallots');
+        })
+      );
+    } else {
+      // Page 2: Specialty & Fusion
+      this.toppingsItemsContainer.add(
+        makeItem(-62, 'realistic_mysore_paste_bowl', 0.62, 'MYSORE CHUTNEY', 'Red garlic paste', '#E74C3C', () => {
+          this.handleToppingAction('mysore_paste');
+        })
+      );
+      this.toppingsItemsContainer.add(
+        makeItem(-10, 'realistic_paneer_masala_bowl', 0.62, 'CHETTINAD PANEER', 'Pepper & fennel', '#F39C12', () => {
+          this.handleToppingAction('paneer_masala');
+        })
+      );
+      this.toppingsItemsContainer.add(
+        makeItem(42, 'realistic_cheese_bowl', 0.62, 'AMUL CHEESE', 'Grated & melted', '#F9E79F', () => {
+          this.handleToppingAction('amul_cheese');
+        })
+      );
+      this.toppingsItemsContainer.add(
+        makeItem(94, 'realistic_coconut_bowl', 0.62, 'SWEET COCONUT', '& Cardamom pods', '#FFFFFF', () => {
+          this.handleToppingAction('fresh_coconut');
+        })
+      );
+    }
   }
 
   /**
@@ -897,13 +1144,6 @@ export class GameScene extends Phaser.Scene {
     const leaf = this.add.image(0, 0, 'realistic_banana_leaf_platter');
     leaf.setDisplaySize(420, 82);
     leaf.setInteractive({ useHandCursor: true });
-
-    // Drag or click to plate
-    leaf.on('pointerdown', () => {
-      if (!this.isDosaPlated) {
-        this.handlePlateAction();
-      }
-    });
 
     this.plateContainer.add(leaf);
 
@@ -929,18 +1169,20 @@ export class GameScene extends Phaser.Scene {
     }).setOrigin(0, 0.5);
     this.plateContainer.add(plateText);
 
-    // Setup Draggable Serving Mechanism
+    // Setup Draggable & Click Serving Mechanism
     this.setupPlatedDosaDragger(leaf);
   }
 
   /**
-   * Setup Draggable Serving Mechanism from Platter to Customer Cards
+   * Setup Draggable & Click Serving Mechanism from Platter to Customer Cards
    */
   private setupPlatedDosaDragger(leaf: Phaser.GameObjects.Image): void {
     this.input.setDraggable(leaf);
+    let isDraggingLeaf = false;
 
     leaf.on('dragstart', (pointer: Phaser.Input.Pointer) => {
       if (!this.isDosaPlated) return;
+      isDraggingLeaf = true;
       SoundFX.getInstance().playClick();
 
       // Highlight all customer cards as drop targets
@@ -982,6 +1224,10 @@ export class GameScene extends Phaser.Scene {
         this.dragProxy = undefined;
       }
 
+      this.time.delayedCall(60, () => {
+        isDraggingLeaf = false;
+      });
+
       if (!this.isDosaPlated) return;
 
       // Check if dropped onto a customer card
@@ -994,6 +1240,16 @@ export class GameScene extends Phaser.Scene {
 
       if (servedSlot !== -1 && this.orderCards[servedSlot] && this.slotOrders[servedSlot]) {
         this.handleServeToCustomer(this.orderCards[servedSlot]!, this.slotOrders[servedSlot]!, servedSlot);
+      }
+    });
+
+    // Clicking leaf: plates if unplated, serves if plated!
+    leaf.on('pointerup', () => {
+      if (isDraggingLeaf) return;
+      if (!this.isDosaPlated) {
+        this.handlePlateAction();
+      } else {
+        this.servePlatedDosaToTarget();
       }
     });
   }
@@ -1103,6 +1359,9 @@ export class GameScene extends Phaser.Scene {
       const rec = RECIPES.find(r => r.id === order.recipeId);
       if (rec) return rec;
     }
+    if (this.recipeOverride) {
+      return this.recipeOverride;
+    }
     return RECIPES[0];
   }
 
@@ -1185,6 +1444,7 @@ export class GameScene extends Phaser.Scene {
   private handleGheeAction(): void {
     const state = this.dosaSurface.getState();
     if (state === 'COOKING' || state === 'PERFECT_ROAST') {
+      SoundFX.getInstance().playToppingSprinkle('liquid');
       this.dosaSurface.addGhee();
       this.updateInstructionHUD();
     } else {
@@ -1196,6 +1456,13 @@ export class GameScene extends Phaser.Scene {
   private handleToppingAction(toppingId: string): void {
     const state = this.dosaSurface.getState();
     if (state === 'COOKING' || state === 'PERFECT_ROAST') {
+      let category: 'powder' | 'paste' | 'chunk' | 'liquid' = 'chunk';
+      if (toppingId === 'idli_podi' || toppingId === 'fresh_coconut' || toppingId === 'cumin_pepper') {
+        category = 'powder';
+      } else if (toppingId === 'mysore_paste') {
+        category = 'paste';
+      }
+      SoundFX.getInstance().playToppingSprinkle(category);
       this.dosaSurface.addTopping(toppingId);
       this.updateInstructionHUD();
     } else {
@@ -1236,6 +1503,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handlePlateAction(): void {
+    if (this.isDosaPlated) {
+      this.servePlatedDosaToTarget();
+      return;
+    }
+
     const state = this.dosaSurface.getState();
     if (state === 'FOLDED' || state === 'PERFECT_ROAST' || state === 'COOKING') {
       const targetX = 640;
@@ -1244,6 +1516,7 @@ export class GameScene extends Phaser.Scene {
       this.dosaSurface.plateDosa(targetX, targetY, () => {
         this.isDosaPlated = true;
         this.highlightPlatedDosa();
+        this.updateServeButton();
         this.orderCards.forEach(c => c?.setReadyToServe(true));
         this.updateInstructionHUD();
       });
@@ -1254,6 +1527,68 @@ export class GameScene extends Phaser.Scene {
     } else {
       SoundFX.getInstance().playClick();
       this.spawnStationTip('Fold dosa before plating!');
+    }
+  }
+
+  private servePlatedDosaToTarget(): void {
+    if (!this.isDosaPlated) return;
+
+    let targetSlot = this.activeOrderIndex;
+    let card = this.orderCards[targetSlot];
+    let order = this.slotOrders[targetSlot];
+
+    if (!card || !order) {
+      const availableSlot = this.orderCards.findIndex((c, idx) => c !== null && this.slotOrders[idx] !== null);
+      if (availableSlot !== -1) {
+        targetSlot = availableSlot;
+        card = this.orderCards[availableSlot];
+        order = this.slotOrders[availableSlot];
+      }
+    }
+
+    if (card && order) {
+      this.handleServeToCustomer(card, order, targetSlot);
+    } else {
+      SoundFX.getInstance().playClick();
+      this.spawnStationTip('No waiting customer to serve!');
+    }
+  }
+
+  private updateServeButton(): void {
+    if (!this.serveBarBtnTxt || !this.serveBarBtnBg) return;
+
+    if (this.isDosaPlated) {
+      this.serveBarBtnTxt.setText('🚀 SERVE DINER');
+      this.serveBarBtnTxt.setColor('#FFFDF5');
+      this.serveBarBtnBg.clear();
+      this.serveBarBtnBg.fillStyle(THEME.colors.bananaLeafGreen, 0.98);
+      this.serveBarBtnBg.fillRoundedRect(-43, -14, 86, 28, 6);
+      this.serveBarBtnBg.lineStyle(1.6, THEME.colors.turmericGold, 1.0);
+      this.serveBarBtnBg.strokeRoundedRect(-43, -14, 86, 28, 6);
+
+      if (this.serveBarBtnContainer && !this.tweens.isTweening(this.serveBarBtnContainer)) {
+        this.tweens.add({
+          targets: this.serveBarBtnContainer,
+          scaleX: 1.06,
+          scaleY: 1.06,
+          duration: 450,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+      }
+    } else {
+      if (this.serveBarBtnContainer) {
+        this.tweens.killTweensOf(this.serveBarBtnContainer);
+        this.serveBarBtnContainer.setScale(1.0);
+      }
+      this.serveBarBtnTxt.setText('🍽️ SERVE');
+      this.serveBarBtnTxt.setColor(THEME.colors.creamHex);
+      this.serveBarBtnBg.clear();
+      this.serveBarBtnBg.fillStyle(THEME.colors.curryGreen, 0.95);
+      this.serveBarBtnBg.fillRoundedRect(-43, -14, 86, 28, 6);
+      this.serveBarBtnBg.lineStyle(1.4, THEME.colors.brassBright, 0.9);
+      this.serveBarBtnBg.strokeRoundedRect(-43, -14, 86, 28, 6);
     }
   }
 
@@ -1269,6 +1604,7 @@ export class GameScene extends Phaser.Scene {
       this.plateGlow.clear();
     }
     this.isDosaPlated = false;
+    this.updateServeButton();
     this.orderCards.forEach(c => c?.setReadyToServe(false));
   }
 
@@ -1280,6 +1616,10 @@ export class GameScene extends Phaser.Scene {
       this.spawnStationTip('Prepare and plate a dosa first!');
       return;
     }
+
+    // Immediately clear plated flags so repeated clicks don't double trigger
+    this.clearPlatedDosaHighlight();
+    this.updateInstructionHUD();
 
     const upgradeService = UpgradeService.getInstance();
     const targetRecipe = RECIPES.find(r => r.id === order.recipeId) || RECIPES[0];
@@ -1301,6 +1641,26 @@ export class GameScene extends Phaser.Scene {
 
     const isCorrect = quality.overallScore >= 60 && !isSevereMismatch;
 
+    // Combo streak calculation
+    let comboBonus = 0;
+    if (isCorrect) {
+      const now = Date.now();
+      if (now - this.lastServeTime <= this.comboWindowMs) {
+        this.comboCount++;
+      } else {
+        this.comboCount = 1;
+      }
+      this.lastServeTime = now;
+
+      if (this.comboCount >= 2) {
+        comboBonus = Math.min(80, this.comboCount * 15);
+        SoundFX.getInstance().playCombo(this.comboCount);
+        this.showComboCelebration(this.comboCount, comboBonus);
+      }
+    } else {
+      this.comboCount = 0;
+    }
+
     // Calculate speed tip based on remaining patience
     const patienceRatio = order.patienceRemainingSec / order.timeLimitSec;
     let speedTip = 0;
@@ -1314,7 +1674,7 @@ export class GameScene extends Phaser.Scene {
     const tipMult = upgradeService.getTipBonusMultiplier();
     speedTip = Math.round(speedTip * tipMult);
 
-    let totalEarned = isCorrect ? quality.earnedCoins + speedTip : Math.round(quality.earnedCoins * 0.4);
+    let totalEarned = isCorrect ? quality.earnedCoins + speedTip + comboBonus : Math.round(quality.earnedCoins * 0.4);
     totalEarned = Math.max(10, totalEarned);
 
     // Award coins to Register
@@ -1346,60 +1706,80 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    this.clearPlatedDosaHighlight();
-
-    // Customer Reaction Speech & Audio
-    if (isCorrect) {
-      SoundFX.getInstance().playCustomerDelight();
-      SoundFX.getInstance().playCoinShower();
-      card.showSpeechBubble(this.getDelightQuote(order), true);
-    } else {
-      SoundFX.getInstance().playCustomerDisappoint();
-      card.showSpeechBubble(this.getDisappointQuote(order, quality), false);
-    }
-
-    // Check if Shift Goal Completed!
     const isShiftComplete = this.levelCustomersServed >= this.levelDef.requiredCustomers;
 
-    // Display Review Modal with customer testimonial & coin breakdown
-    new QualityReviewModal(this, {
-      recipe: targetRecipe,
-      customerOrder: order,
-      quality: {
-        ...quality,
-        earnedCoins: totalEarned
-      },
-      onCookNext: () => {
-        // Customer exits happily
-        card.exitAnimation(isCorrect ? 'served' : 'timeout', () => {
-          this.orderCards[slotIdx] = null;
-          this.slotOrders[slotIdx] = null;
+    // FLY THE DOSA VISUALLY OFF THE BANANA LEAF TO THE CUSTOMER TICKET!
+    const dosaCont = this.dosaSurface.getContainer();
+    SoundFX.getInstance().playSpatulaScrape();
 
-          if (!isShiftComplete) {
-            // Spawn next customer into this vacant slot
-            this.spawnCustomerAtSlot(slotIdx, 2000);
-          }
-        });
+    this.tweens.add({
+      targets: dosaCont,
+      x: card.x,
+      y: card.y,
+      scaleX: 0.32,
+      scaleY: 0.32,
+      rotation: 0.15,
+      alpha: 0,
+      duration: 380,
+      ease: 'Back.easeIn',
+      onComplete: () => {
+        // Clear the cooking surface and plate completely!
+        this.dosaSurface.reset();
 
-        // Reset cooking surface
-        this.handleResetAction();
-
-        if (isShiftComplete) {
-          // Trigger Level Complete Screen!
-          this.time.delayedCall(600, () => {
-            this.showLevelCompletion();
-          });
+        // Customer Reaction Speech & Audio
+        if (isCorrect) {
+          SoundFX.getInstance().playCustomerDelight();
+          SoundFX.getInstance().playCoinShower();
+          card.showSpeechBubble(this.getDelightQuote(order), true);
+          this.spawnConfettiBurst(card.x, card.y + 40, quality.stars === 3 || this.comboCount >= 3 ? 32 : 18);
         } else {
-          // Auto-select another active customer
-          const nextIdx = this.slotOrders.findIndex((o, i) => o !== null && i !== slotIdx);
-          if (nextIdx !== -1) {
-            this.activeOrderIndex = nextIdx;
-            this.refreshOrderSelection();
-          }
+          SoundFX.getInstance().playCustomerDisappoint();
+          card.showSpeechBubble(this.getDisappointQuote(order, quality), false);
         }
-      },
-      onViewRecipeBook: () => {
-        this.openRecipeBook();
+
+        // Brief delay for dramatic delivery before modal review pops up
+        this.time.delayedCall(300, () => {
+          new QualityReviewModal(this, {
+            recipe: targetRecipe,
+            customerOrder: order,
+            quality: {
+              ...quality,
+              earnedCoins: totalEarned
+            },
+            onCookNext: () => {
+              // Customer exits happily
+              card.exitAnimation(isCorrect ? 'served' : 'timeout', () => {
+                this.orderCards[slotIdx] = null;
+                this.slotOrders[slotIdx] = null;
+
+                if (!isShiftComplete) {
+                  // Spawn next customer into this vacant slot
+                  this.spawnCustomerAtSlot(slotIdx, 2000);
+                }
+              });
+
+              // Reset cooking surface
+              this.handleResetAction();
+
+              if (isShiftComplete) {
+                // Trigger Level Complete Screen!
+                this.time.delayedCall(600, () => {
+                  this.showLevelCompletion();
+                });
+              } else {
+                // Auto-select another active customer
+                const nextIdx = this.slotOrders.findIndex((o, i) => o !== null && i !== slotIdx);
+                if (nextIdx !== -1) {
+                  this.activeOrderIndex = nextIdx;
+                  this.refreshOrderSelection();
+                }
+              }
+            },
+            onViewRecipeBook: () => {
+              this.openRecipeBook();
+            }
+          });
+        });
       }
     });
   }
@@ -1485,12 +1865,132 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  /**
+   * Floating combo streak badge with flame animation
+   */
+  private showComboCelebration(comboCount: number, bonusCoins: number): void {
+    const { width } = THEME.dimensions;
+    const bannerContainer = this.add.container(width / 2, 220);
+    bannerContainer.setDepth(90);
+
+    const title = comboCount >= 4 ? `💥 TASTE SENSATION x${comboCount}!` : `🔥 COMBO x${comboCount}!`;
+    const msg = `${title} +₹${bonusCoins} TIP BONUS`;
+
+    const bg = this.add.graphics();
+    bg.fillStyle(THEME.colors.teakWood, 0.95);
+    bg.fillRoundedRect(-180, -18, 360, 36, 18);
+    bg.lineStyle(2.5, THEME.colors.turmericBright, 1);
+    bg.strokeRoundedRect(-180, -18, 360, 36, 18);
+    bannerContainer.add(bg);
+
+    const txt = this.add.text(0, 0, msg, {
+      fontFamily: THEME.fonts.title,
+      fontSize: '14px',
+      color: THEME.colors.turmericBrightHex
+    }).setOrigin(0.5);
+    bannerContainer.add(txt);
+
+    bannerContainer.setScale(0.5);
+    bannerContainer.setAlpha(0);
+
+    this.tweens.add({
+      targets: bannerContainer,
+      scaleX: 1.1,
+      scaleY: 1.1,
+      alpha: 1,
+      duration: 180,
+      ease: 'Back.easeOut',
+      onComplete: () => {
+        this.tweens.add({
+          targets: bannerContainer,
+          scaleX: 1.0,
+          scaleY: 1.0,
+          duration: 100,
+          onComplete: () => {
+            this.time.delayedCall(1200, () => {
+              this.tweens.add({
+                targets: bannerContainer,
+                y: 190,
+                alpha: 0,
+                duration: 250,
+                ease: 'Quad.easeIn',
+                onComplete: () => bannerContainer.destroy()
+              });
+            });
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Celebratory confetti particle explosion
+   */
+  private spawnConfettiBurst(centerX: number, centerY: number, count: number = 32): void {
+    const colors = [
+      THEME.colors.turmericBright,
+      THEME.colors.turmeric,
+      THEME.colors.bananaLeafGreen,
+      THEME.colors.curryGreen,
+      THEME.colors.terracotta,
+      0xFFFDF5,
+      0xE67E22
+    ];
+
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+      const speed = 120 + Math.random() * 220;
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed - 60;
+      const col = colors[i % colors.length];
+
+      const isCircle = i % 2 === 0;
+      let particle: Phaser.GameObjects.Shape;
+      if (isCircle) {
+        particle = this.add.circle(centerX, centerY, 3 + Math.random() * 3, col);
+      } else {
+        particle = this.add.rectangle(centerX, centerY, 6 + Math.random() * 4, 4 + Math.random() * 3, col);
+      }
+      particle.setDepth(95);
+
+      const targetX = centerX + vx * 0.7;
+      const targetY = centerY + vy * 0.7 + 50;
+
+      this.tweens.add({
+        targets: particle,
+        x: targetX,
+        y: targetY,
+        rotation: (Math.random() - 0.5) * 8,
+        alpha: 0,
+        scaleX: 0.3,
+        scaleY: 0.3,
+        duration: 650 + Math.random() * 300,
+        ease: 'Cubic.easeOut',
+        onComplete: () => particle.destroy()
+      });
+    }
+  }
+
   private openRecipeBook(): void {
     if (this.isModalOpen) return;
     this.isModalOpen = true;
-    new RecipeBookModal(this, () => {
-      this.isModalOpen = false;
-    });
+    new RecipeBookModal(
+      this,
+      () => {
+        this.isModalOpen = false;
+      },
+      (recipeToCook: Recipe) => {
+        this.isModalOpen = false;
+        this.setCookingTargetRecipe(recipeToCook);
+      }
+    );
+  }
+
+  private setCookingTargetRecipe(recipe: Recipe): void {
+    this.recipeOverride = recipe;
+    SoundFX.getInstance().playSuccessChime();
+    this.spawnStationTip(`👨‍🍳 PRACTICE RECIPE: ${recipe.name.toUpperCase()}`);
+    this.updateInstructionHUD();
   }
 
   private openUpgrades(): void {
@@ -1520,12 +2020,25 @@ export class GameScene extends Phaser.Scene {
     );
   }
 
+  private openSettings(): void {
+    if (this.isModalOpen) return;
+    this.isModalOpen = true;
+    new SettingsModal(this, () => {
+      this.isModalOpen = false;
+    });
+  }
+
   /**
    * Level completion celebration screen with stars, coins, and next level unlocking
    */
   private showLevelCompletion(): void {
     if (this.isModalOpen) return;
     this.isModalOpen = true;
+
+    const { width, height } = THEME.dimensions;
+    this.spawnConfettiBurst(width / 2, height / 2 - 60, 50);
+    this.spawnConfettiBurst(width / 3, height / 2, 35);
+    this.spawnConfettiBurst((2 * width) / 3, height / 2, 35);
 
     const upgradeService = UpgradeService.getInstance();
     const servedCount = Math.max(1, this.levelCustomersServed);
@@ -1543,7 +2056,12 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Complete Level in UpgradeService (persists progress & unlocks next Day)
-    upgradeService.completeLevel(this.currentDay, starsEarned, this.levelScoreTotal, this.levelEarningsTotal);
+    const newlyUnlockedRecipes = upgradeService.completeLevel(
+      this.currentDay,
+      starsEarned,
+      this.levelScoreTotal,
+      this.levelEarningsTotal
+    );
 
     const result: LevelResult = {
       day: this.currentDay,
@@ -1556,7 +2074,8 @@ export class GameScene extends Phaser.Scene {
       baseEarnings: Math.round(this.levelEarningsTotal * 0.75),
       tipsEarned: Math.round(this.levelEarningsTotal * 0.25),
       totalCoins: upgradeService.getCoins(),
-      overallScore: this.levelScoreTotal
+      overallScore: this.levelScoreTotal,
+      newlyUnlockedRecipes
     };
 
     new LevelCompleteModal(this, {
@@ -1598,10 +2117,10 @@ export class GameScene extends Phaser.Scene {
     const customerTag = order ? `${order.customerName.toUpperCase()} (T-${order.tableNumber})` : 'WALK-IN';
 
     if (this.isDosaPlated) {
-      this.guidanceText.setText(`👉 DRAG PLATED DOSA TO SERVE ${customerTag} (OR CLICK TICKET)!`);
+      this.guidanceText.setText(`👉 CLICK "SERVE DINER" OR TICKET TO DELIVER TO ${customerTag}!`);
       this.guidanceText.setColor(THEME.colors.bananaLeafGreenHex);
       if (this.tawaTempText) {
-        this.tawaTempText.setText(`SEASONED KAL TAWA: ${this.currentTemp}°C • DOSA PLATED ON BANANA LEAF`);
+        this.tawaTempText.setText(`SEASONED KAL TAWA: ${this.currentTemp}°C • DOSA READY ON BANANA LEAF`);
         this.tawaTempText.setColor(THEME.colors.bananaLeafGreenHex);
       }
       return;

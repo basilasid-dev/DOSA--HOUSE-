@@ -110,6 +110,7 @@ export interface LevelResult {
   tipsEarned: number;
   totalCoins: number;
   overallScore: number;
+  newlyUnlockedRecipes?: string[];
 }
 
 export type TawaHeatState = 'off' | 'warming' | 'ready' | 'too_hot' | 'burnt';

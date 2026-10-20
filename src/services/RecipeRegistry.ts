@@ -153,26 +153,26 @@ export const RECIPES: Recipe[] = [
     ingredients: [
       { id: 'batter', name: 'Fermented Dosa Batter', icon: '🥣', required: true, amountText: '1 ladle', culinaryRole: 'Crispy golden shell with rich buttery foundation' },
       { id: 'mysore_paste', name: 'Fiery Red Garlic Chutney', icon: '🧄', required: true, amountText: '1.5 tbsp', culinaryRole: 'Roasted Byadagi chilli, garlic, tamarind & chana dal' },
-      { id: 'butter', name: 'White Makhan Butter', icon: '🧈', required: true, amountText: '1 large dollop', culinaryRole: 'Melts over hot chutney to create silky glaze' },
-      { id: 'potato_masala', name: 'Silky Masala Filling', icon: '🥔', required: true, amountText: '1 scoop', culinaryRole: 'Comforting turmeric potato core' }
+      { id: 'potato_masala', name: 'Silky Masala Filling', icon: '🥔', required: true, amountText: '1 scoop', culinaryRole: 'Comforting turmeric potato core' },
+      { id: 'ghee', name: 'Desi Cow Ghee', icon: '🧈', required: true, amountText: '2 tsp', culinaryRole: 'Melts over hot chutney to create silky glaze' }
     ],
     steps: [
       { stepNumber: 1, instruction: 'Swirl crisp thin batter over tawa at high heat.' },
       { stepNumber: 2, instruction: 'Smear ruby Mysore paste across entire inner face with spatula.' },
-      { stepNumber: 3, instruction: 'Drop dollop of white butter and spiced potato center.' },
+      { stepNumber: 3, instruction: 'Drop dollop of spiced potato center and golden ghee.' },
       { stepNumber: 4, instruction: 'Fold tightly into crisp golden triangle.' }
     ],
     prepStages: [
       { stageNumber: 1, title: 'Crisp Base Swirl', detail: 'Swirl batter evenly on high heat until translucent and starting to brown.', icon: '🌀', proTip: 'Must be hot enough so bottom crisps while top is moist.' },
       { stageNumber: 2, title: 'Red Chutney Lacquer', detail: 'Use back of spoon to paint red Mysore garlic paste across the inner surface.', icon: '🖌️', proTip: 'Cover edge to edge for flavor in every bite.' },
-      { stageNumber: 3, title: 'White Butter Dollop', detail: 'Drop generous white makhan butter; watch it sizzle and melt into the paste.', icon: '🧈', proTip: 'Butter tempers the red chili garlic heat.' },
+      { stageNumber: 3, title: 'Masala & Ghee Drizzle', detail: 'Drop spiced turmeric potatoes and golden ghee; watch it sizzle.', icon: '🧈', proTip: 'Ghee tempers the red chili garlic heat.' },
       { stageNumber: 4, title: 'Royal Envelop Fold', detail: 'Center the spiced potatoes; fold crisply into a grand triangle.', icon: '👑', proTip: 'Serve immediately with frothy filter coffee.' }
     ],
     condiments: ['Coconut-Coriander Chutney', 'Traditional Hotel Sambar'],
     lore: 'Created in the legendary cafes of Mysore, the addition of garlic-chilli chutney and white butter elevated the humble dosa into a royal feast fit for maharajas.',
-    unlockedByDefault: true,
-    unlockCostCoins: 0,
-    requiredLevel: 1
+    unlockedByDefault: false,
+    unlockCostCoins: 450,
+    requiredLevel: 3
   },
   {
     id: 'paper_roast',
@@ -184,7 +184,7 @@ export const RECIPES: Recipe[] = [
     cookingTimeSec: 80,
     calories: '340 kcal',
     foldType: 'cylinder',
-    imageKey: 'photo_plain_roast',
+    imageKey: 'photo_paper_roast',
     ingredients: [
       { id: 'batter', name: 'Ultra-Fine Fermented Batter', icon: '🥣', required: true, amountText: '2 ladles', culinaryRole: 'Higher rice ratio for unmatched crackle' },
       { id: 'ghee', name: 'Desi Cow Ghee', icon: '🧈', required: true, amountText: '4 tsp', culinaryRole: 'Generous basting along the 3-foot length' }
@@ -217,7 +217,7 @@ export const RECIPES: Recipe[] = [
     cookingTimeSec: 70,
     calories: '360 kcal',
     foldType: 'triangle',
-    imageKey: 'photo_masala_dosa',
+    imageKey: 'photo_chettinad_paneer',
     ingredients: [
       { id: 'batter', name: 'Fermented Dosa Batter', icon: '🥣', required: true, amountText: '1 ladle', culinaryRole: 'Crispy outer shell' },
       { id: 'paneer_masala', name: 'Spicy Chettinad Paneer', icon: '🧀', required: true, amountText: '2 generous scoops', culinaryRole: 'Fresh malai paneer, black pepper & fennel' },
@@ -239,7 +239,7 @@ export const RECIPES: Recipe[] = [
     lore: 'Chettinad cuisine is world-renowned for its bold use of whole spices, black pepper, and stone-ground masalas cultivated along maritime spice trading routes.',
     unlockedByDefault: false,
     unlockCostCoins: 500,
-    requiredLevel: 3
+    requiredLevel: 4
   },
   {
     id: 'cheese_chilli',
@@ -251,11 +251,12 @@ export const RECIPES: Recipe[] = [
     cookingTimeSec: 55,
     calories: '380 kcal',
     foldType: 'half_moon',
-    imageKey: 'photo_ghee_podi',
+    imageKey: 'photo_cheese_chilli',
     ingredients: [
       { id: 'batter', name: 'Fermented Dosa Batter', icon: '🥣', required: true, amountText: '1 ladle', culinaryRole: 'Lacy, sturdy crepe' },
       { id: 'amul_cheese', name: 'Grated Amul Cheese', icon: '🧀', required: true, amountText: '1 generous cup', culinaryRole: 'Melts into a stretchy, gooey golden blanket' },
-      { id: 'green_chillies', name: 'Spicy Green Chillies', icon: '🌶️', required: true, amountText: '1 tbsp', culinaryRole: 'Cuts through rich dairy fat' }
+      { id: 'ghee', name: 'Desi Cow Ghee', icon: '🧈', required: true, amountText: '1.5 tsp', culinaryRole: 'Crisps bottom crust' },
+      { id: 'green_chillies', name: 'Spicy Green Chillies', icon: '🌶️', required: false, amountText: '1 tbsp', culinaryRole: 'Cuts through rich dairy fat' }
     ],
     steps: [
       { stepNumber: 1, instruction: 'Swirl batter slightly crispy on medium-high tawa.' },
@@ -285,11 +286,11 @@ export const RECIPES: Recipe[] = [
     cookingTimeSec: 65,
     calories: '220 kcal',
     foldType: 'triangle',
-    imageKey: 'photo_plain_roast',
+    imageKey: 'photo_rava_crispy',
     ingredients: [
-      { id: 'rava_batter', name: 'Semolina & Rice Flour Batter', icon: '🥣', required: true, amountText: '1 cup runny batter', culinaryRole: 'Liquid batter that creates webbed mesh' },
-      { id: 'cumin_pepper', name: 'Whole Cumin & Peppercorns', icon: '🧂', required: true, amountText: '1 tsp', culinaryRole: 'Warm crunch in every lacy bite' },
-      { id: 'ghee', name: 'Desi Cow Ghee', icon: '🧈', required: true, amountText: '2.5 tsp', culinaryRole: 'Crisps every delicate strand of semolina' }
+      { id: 'batter', name: 'Semolina & Rice Flour Batter', icon: '🥣', required: true, amountText: '1 cup runny batter', culinaryRole: 'Liquid batter that creates webbed mesh' },
+      { id: 'ghee', name: 'Desi Cow Ghee', icon: '🧈', required: true, amountText: '2.5 tsp', culinaryRole: 'Crisps every delicate strand of semolina' },
+      { id: 'cumin_pepper', name: 'Whole Cumin & Peppercorns', icon: '🧂', required: false, amountText: '1 tsp', culinaryRole: 'Warm crunch in every lacy bite' }
     ],
     steps: [
       { stepNumber: 1, instruction: 'Heat cast-iron tawa until water droplets dance rapidly.' },
@@ -319,11 +320,11 @@ export const RECIPES: Recipe[] = [
     cookingTimeSec: 50,
     calories: '290 kcal',
     foldType: 'half_moon',
-    imageKey: 'photo_onion_uthappam',
+    imageKey: 'photo_jaggery_coconut',
     ingredients: [
-      { id: 'sweet_batter', name: 'Jaggery Fermented Batter', icon: '🥣', required: true, amountText: '1 ladle', culinaryRole: 'Caramelizes into dark amber sweetness' },
-      { id: 'fresh_coconut', name: 'Grated Tender Coconut', icon: '🥥', required: true, amountText: '3 tbsp', culinaryRole: 'Sweet juicy crunch' },
-      { id: 'cardamom', name: 'Green Cardamom & Nutmeg', icon: '🌿', required: true, amountText: '1/2 tsp', culinaryRole: 'Temple festival aroma' }
+      { id: 'batter', name: 'Jaggery Fermented Batter', icon: '🥣', required: true, amountText: '1 ladle', culinaryRole: 'Caramelizes into dark amber sweetness' },
+      { id: 'fresh_coconut', name: 'Grated Tender Coconut & Cardamom', icon: '🥥', required: true, amountText: '3 tbsp', culinaryRole: 'Sweet juicy crunch' },
+      { id: 'ghee', name: 'Desi Cow Ghee', icon: '🧈', required: true, amountText: '2 tsp', culinaryRole: 'Caramelizes jaggery without sticking' }
     ],
     steps: [
       { stepNumber: 1, instruction: 'Spread golden jaggery batter over medium-heated tawa.' },
@@ -340,21 +341,58 @@ export const RECIPES: Recipe[] = [
     condiments: ['Melted Desi Ghee', 'Filter Coffee'],
     lore: 'Prepared during Karthigai Deepam and Pongal harvest celebrations in Tamil Nadu, this sweet treat honors the sweetness of life and ancestral tiffin traditions.',
     unlockedByDefault: false,
-    unlockCostCoins: 1500,
-    requiredLevel: 6
+    unlockCostCoins: 1200,
+    requiredLevel: 5
   }
 ];
+
+const RECIPE_STORAGE_KEY = 'DOSA_HOUSE_RECIPE_UNLOCKS_V1';
 
 export class RecipeService {
   private static instance: RecipeService;
   private recipes: Recipe[] = RECIPES;
-  private unlockedIds: Set<string> = new Set(['plain_roast', 'masala_dosa', 'ghee_podi_dosa', 'onion_uthappam', 'mysore_masala']);
+  private unlockedIds: Set<string>;
+
+  private constructor() {
+    this.unlockedIds = new Set<string>();
+    this.load();
+  }
 
   public static getInstance(): RecipeService {
     if (!RecipeService.instance) {
       RecipeService.instance = new RecipeService();
     }
     return RecipeService.instance;
+  }
+
+  private load(): void {
+    // Default unlocked recipes
+    const defaults = this.recipes.filter(r => r.unlockedByDefault).map(r => r.id);
+    this.unlockedIds = new Set<string>(defaults);
+
+    try {
+      const saved = localStorage.getItem(RECIPE_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          parsed.forEach(id => {
+            if (typeof id === 'string') {
+              this.unlockedIds.add(id);
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load recipe save data:', e);
+    }
+  }
+
+  private save(): void {
+    try {
+      localStorage.setItem(RECIPE_STORAGE_KEY, JSON.stringify(Array.from(this.unlockedIds)));
+    } catch (e) {
+      console.warn('Could not save recipe save data:', e);
+    }
   }
 
   public getAll(): Recipe[] {
@@ -370,7 +408,56 @@ export class RecipeService {
   }
 
   public unlock(id: string): boolean {
+    if (!this.unlockedIds.has(id)) {
+      this.unlockedIds.add(id);
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Unlock all recipes required for a given day/level progression
+   * Returns an array of newly unlocked recipe names
+   */
+  public unlockForDay(day: number): string[] {
+    const newlyUnlocked: string[] = [];
+    this.recipes.forEach(r => {
+      if (r.requiredLevel <= day && !this.unlockedIds.has(r.id)) {
+        this.unlockedIds.add(r.id);
+        newlyUnlocked.push(r.name);
+      }
+    });
+
+    if (newlyUnlocked.length > 0) {
+      this.save();
+    }
+    return newlyUnlocked;
+  }
+
+  /**
+   * Unlock a recipe by spending earned coins
+   */
+  public unlockWithCoins(id: string, currentCoins: number): { success: boolean; cost: number; error?: string } {
+    const recipe = this.getById(id);
+    if (!recipe) {
+      return { success: false, cost: 0, error: 'Recipe not found' };
+    }
+    if (this.unlockedIds.has(id)) {
+      return { success: false, cost: 0, error: 'Already unlocked' };
+    }
+    if (currentCoins < recipe.unlockCostCoins) {
+      return { success: false, cost: recipe.unlockCostCoins, error: 'Insufficient coins' };
+    }
+
     this.unlockedIds.add(id);
-    return true;
+    this.save();
+    return { success: true, cost: recipe.unlockCostCoins };
+  }
+
+  public resetProgress(): void {
+    const defaults = this.recipes.filter(r => r.unlockedByDefault).map(r => r.id);
+    this.unlockedIds = new Set<string>(defaults);
+    this.save();
   }
 }

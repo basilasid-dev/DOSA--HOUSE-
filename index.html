@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="DOSA HOUSE" />
+  <meta name="theme-color" content="#1a0e07" />
+  <link rel="manifest" href="/manifest.json" />
   <title>DOSA HOUSE - Cozy South Indian Cooking Simulator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -81,9 +87,90 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    /* Mobile portrait rotation prompt overlay */
+    #rotate-device-prompt {
+      display: none;
+    }
+
+    @media screen and (orientation: portrait) and (max-width: 960px) {
+      #rotate-device-prompt {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: radial-gradient(circle at 50% 30%, #2a150a 0%, #120904 100%);
+        z-index: 99999;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 30px;
+        color: #FFF8EE;
+        box-sizing: border-box;
+      }
+
+      .rotate-phone-anim {
+        width: 64px;
+        height: 64px;
+        font-size: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: rotateDevice 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        margin-bottom: 22px;
+      }
+
+      .rotate-title {
+        font-family: 'Yatra One', cursive;
+        font-size: 22px;
+        color: #F3A712;
+        letter-spacing: 1.5px;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      }
+
+      .rotate-subtitle {
+        font-family: 'Outfit', sans-serif;
+        font-size: 14.5px;
+        color: #F2E4C9;
+        max-width: 290px;
+        line-height: 1.45;
+        margin-bottom: 24px;
+      }
+
+      .rotate-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(243, 167, 18, 0.15);
+        border: 1px solid rgba(243, 167, 18, 0.4);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #FFC107;
+        font-weight: 600;
+      }
+
+      @keyframes rotateDevice {
+        0%, 15% { transform: rotate(0deg); }
+        45%, 70% { transform: rotate(90deg); }
+        90%, 100% { transform: rotate(0deg); }
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Orientation prompt for smartphone users in portrait mode -->
+  <div id="rotate-device-prompt">
+    <div class="rotate-phone-anim">📱</div>
+    <div class="rotate-title">ROTATE YOUR PHONE</div>
+    <div class="rotate-subtitle">Turn to Landscape Mode for the authentic South Indian kitchen experience!</div>
+    <div class="rotate-badge">🌿 Best in Landscape Mode 🔄</div>
+  </div>
+
   <div id="game-container">
     <div id="initial-loader">
       <div class="spinner"></div>

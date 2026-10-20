@@ -75,6 +75,7 @@ export class DosaSurface {
   private isFolded: boolean = false;
   private foldType: DosaFoldType | null = null;
   private isPlated: boolean = false;
+  private onPlatedClick?: () => void;
 
   // Visual Display Objects
   private container: Phaser.GameObjects.Container;
@@ -391,6 +392,24 @@ export class DosaSurface {
     } else if (toppingId === 'shallots') {
       label = '🧅 +SHALLOTS & CHILLIES';
       color = THEME.colors.creamHex;
+    } else if (toppingId === 'mysore_paste') {
+      label = '🧄 +MYSORE RED CHUTNEY';
+      color = '#E74C3C';
+    } else if (toppingId === 'paneer_masala') {
+      label = '🧀 +CHETTINAD PANEER';
+      color = '#F39C12';
+    } else if (toppingId === 'amul_cheese') {
+      label = '🧀 +GRATED AMUL CHEESE';
+      color = '#F9E79F';
+    } else if (toppingId === 'fresh_coconut') {
+      label = '🥥 +COCONUT & CARDAMOM';
+      color = '#FFFFFF';
+    } else if (toppingId === 'green_chillies') {
+      label = '🌶️ +GREEN CHILLIES';
+      color = '#2ECC71';
+    } else if (toppingId === 'cumin_pepper') {
+      label = '🧂 +CUMIN & PEPPER';
+      color = '#BDC3C7';
     }
 
     this.spawnFloatingBadge(label, color);
@@ -411,11 +430,14 @@ export class DosaSurface {
     SoundFX.getInstance().playSpatulaScrape();
     SoundFX.getInstance().playDosaFlip();
 
+    // Smooth 3D flip arc with subtle rotational tilt
     this.scene.tweens.add({
       targets: this.container,
-      scaleY: 0.05,
-      y: this.y - 32,
-      duration: 180,
+      scaleY: 0.04,
+      scaleX: 0.94,
+      y: this.y - 45,
+      rotation: 0.08,
+      duration: 190,
       ease: 'Cubic.easeOut',
       yoyo: true,
       onYoyo: () => {
@@ -425,7 +447,31 @@ export class DosaSurface {
       },
       onComplete: () => {
         this.container.y = this.y;
+        this.container.rotation = 0;
+        this.container.scaleX = 1.0;
         this.container.scaleY = 1.0;
+
+        // Landing sizzle ripple and squash
+        SoundFX.getInstance().playSizzle(0.7);
+        const landRipple = this.scene.add.circle(this.x, this.y, this.currentSpreadRadius * 0.9, THEME.colors.turmericBright, 0.45);
+        this.scene.tweens.add({
+          targets: landRipple,
+          scaleX: 1.15,
+          scaleY: 1.15,
+          alpha: 0,
+          duration: 260,
+          onComplete: () => landRipple.destroy()
+        });
+
+        this.scene.tweens.add({
+          targets: this.container,
+          scaleX: 1.04,
+          scaleY: 0.96,
+          duration: 80,
+          yoyo: true,
+          ease: 'Quad.easeInOut'
+        });
+
         this.spawnFloatingBadge(this.isFlipped ? '🔄 FLIPPED ON TAWA' : '🔄 FLIPPED BACK', THEME.colors.creamHex);
         this.onStateChange?.(this.state, this.cookingProgress);
         onDone?.();
@@ -451,18 +497,52 @@ export class DosaSurface {
     SoundFX.getInstance().playSpatulaScrape();
     SoundFX.getInstance().playCrispFold();
 
+    // Tactile 2-phase creasing snap
     this.scene.tweens.add({
       targets: this.container,
-      scaleX: 0.82,
-      scaleY: 0.82,
-      duration: 160,
+      scaleX: 0.78,
+      scaleY: 0.86,
+      duration: 170,
       ease: 'Back.easeIn',
       yoyo: true,
       onYoyo: () => {
         this.draw();
       },
       onComplete: () => {
-        this.container.setScale(1.0);
+        this.scene.tweens.add({
+          targets: this.container,
+          scaleX: 1.03,
+          scaleY: 1.03,
+          duration: 100,
+          yoyo: true,
+          ease: 'Back.easeOut',
+          onComplete: () => {
+            this.container.setScale(1.0);
+          }
+        });
+
+        // Golden creasing sparkle burst
+        for (let i = 0; i < 6; i++) {
+          const angle = (i / 6) * Math.PI * 2;
+          const spark = this.scene.add.circle(
+            this.x + Math.cos(angle) * 35,
+            this.y + Math.sin(angle) * 25,
+            3,
+            THEME.colors.turmericBright,
+            0.9
+          );
+          this.scene.tweens.add({
+            targets: spark,
+            x: spark.x + Math.cos(angle) * 40,
+            y: spark.y + Math.sin(angle) * 30,
+            alpha: 0,
+            scale: 0.3,
+            duration: 350,
+            ease: 'Cubic.easeOut',
+            onComplete: () => spark.destroy()
+          });
+        }
+
         const foldNames: Record<DosaFoldType, string> = {
           cylinder: 'CYLINDRICAL FLUTE',
           triangle: 'ROYAL TRIANGLE',
@@ -499,15 +579,48 @@ export class DosaSurface {
     SoundFX.getInstance().playPlateThud();
     SoundFX.getInstance().playSuccessChime();
 
+    // Smooth parabolic arc motion: lifts slightly before descending to plate
     this.scene.tweens.add({
       targets: this.container,
       x: targetX,
       y: targetY,
       scaleX: 0.74,
       scaleY: 0.74,
-      duration: 440,
-      ease: 'Cubic.easeOut',
+      duration: 460,
+      ease: 'Cubic.easeInOut',
       onComplete: () => {
+        // Joyful plate landing squash and sparkle ring
+        this.scene.tweens.add({
+          targets: this.container,
+          scaleX: 0.78,
+          scaleY: 0.70,
+          duration: 110,
+          yoyo: true,
+          ease: 'Quad.easeInOut',
+          onComplete: () => {
+            this.container.setScale(0.74);
+            this.container.setSize(260, 90);
+            this.container.setInteractive({ useHandCursor: true });
+            this.container.off('pointerup');
+            this.container.on('pointerup', () => {
+              if (this.state === 'PLATED') {
+                this.onPlatedClick?.();
+              }
+            });
+          }
+        });
+
+        // Platter golden halo
+        const halo = this.scene.add.circle(targetX, targetY, 95, THEME.colors.bananaLeafGreen, 0.45);
+        this.scene.tweens.add({
+          targets: halo,
+          scaleX: 1.25,
+          scaleY: 1.25,
+          alpha: 0,
+          duration: 380,
+          onComplete: () => halo.destroy()
+        });
+
         this.spawnFloatingBadge('✨ PLATED ON BANANA LEAF! ✨', THEME.colors.turmericBrightHex, -45);
         this.onStateChange?.(this.state, 1.0);
         onComplete?.();
@@ -691,8 +804,12 @@ export class DosaSurface {
     this.foldType = null;
     this.isPlated = false;
 
+    this.container.disableInteractive();
+    this.container.off('pointerup');
     this.container.setPosition(this.x, this.y);
     this.container.setScale(1.0);
+    this.container.setAlpha(1.0);
+    this.container.setRotation(0);
 
     if (this.dollopSprite) {
       this.dollopSprite.setVisible(false);
@@ -922,7 +1039,87 @@ export class DosaSurface {
       }
     }
 
-    // 4. Reverse side browned markings if flipped
+    // 4. Mysore Red Garlic Chutney Lacquer
+    if (this.appliedToppings.has('mysore_paste')) {
+      g.fillStyle(0x900c3f, 0.62);
+      g.fillCircle(0, 0, currentR * 0.72);
+      g.fillStyle(0xc0392b, 0.75);
+      g.fillCircle(0, 0, currentR * 0.45);
+
+      for (let i = 0; i < 28; i++) {
+        const pa = (i * 2.39996) % (Math.PI * 2);
+        const pr = Math.sqrt((i + 1) / 28) * currentR * 0.62;
+        g.fillStyle(i % 3 === 0 ? 0xf9e79f : 0xe74c3c, 0.9);
+        g.fillCircle(Math.cos(pa) * pr, Math.sin(pa) * pr, 1.8);
+      }
+    }
+
+    // 5. Chettinad Spicy Malai Paneer
+    if (this.appliedToppings.has('paneer_masala')) {
+      g.fillStyle(0xb7950b, 0.8);
+      g.fillEllipse(0, 0, 75, 32);
+
+      const pCubes = [
+        { x: -18, y: -4, w: 14, h: 11 },
+        { x: 0, y: 5, w: 16, h: 12 },
+        { x: 18, y: -3, w: 15, h: 12 },
+        { x: -6, y: -10, w: 12, h: 10 },
+        { x: 12, y: 8, w: 13, h: 10 }
+      ];
+      pCubes.forEach(c => {
+        g.fillStyle(0xfffdf5, 0.95);
+        g.fillRect(c.x - c.w / 2, c.y - c.h / 2, c.w, c.h);
+        g.lineStyle(1, 0x935116, 0.8);
+        g.strokeRect(c.x - c.w / 2, c.y - c.h / 2, c.w, c.h);
+      });
+
+      g.fillStyle(0x17202a, 0.95);
+      for (let p = 0; p < 14; p++) {
+        const a = (p * 2.1) % (Math.PI * 2);
+        const d = 5 + (p * 4) % 30;
+        g.fillCircle(Math.cos(a) * d, Math.sin(a) * d * 0.6, 1.6);
+      }
+    }
+
+    // 6. Grated Amul Cheese Snowfall
+    if (this.appliedToppings.has('amul_cheese')) {
+      for (let i = 0; i < 42; i++) {
+        const ca = (i * 2.39996) % (Math.PI * 2);
+        const cd = Math.sqrt((i + 1) / 42) * currentR * 0.72;
+        const cx = Math.cos(ca) * cd;
+        const cy = Math.sin(ca) * cd;
+        g.fillStyle(i % 2 === 0 ? 0xfef9e7 : 0xf7dc6f, 0.92);
+        g.fillRect(cx - 5, cy - 1.5, 10, 3);
+      }
+    }
+
+    // 7. Sweet Grated Coconut & Cardamom
+    if (this.appliedToppings.has('fresh_coconut')) {
+      for (let i = 0; i < 48; i++) {
+        const ca = (i * 2.39996) % (Math.PI * 2);
+        const cd = Math.sqrt((i + 1) / 48) * currentR * 0.70;
+        const cx = Math.cos(ca) * cd;
+        const cy = Math.sin(ca) * cd;
+        g.fillStyle(0xffffff, 0.95);
+        g.fillEllipse(cx, cy, 3.5, 1.8);
+        if (i % 4 === 0) {
+          g.fillStyle(0x27ae60, 0.9);
+          g.fillCircle(cx + 2, cy - 1, 1.4);
+        }
+      }
+    }
+
+    // 8. Cumin & Black Peppercorns
+    if (this.appliedToppings.has('cumin_pepper')) {
+      for (let i = 0; i < 24; i++) {
+        const ca = (i * 1.9) % (Math.PI * 2);
+        const cd = Math.sqrt((i + 1) / 24) * currentR * 0.75;
+        g.fillStyle(i % 2 === 0 ? 0x17202a : 0x784212, 0.9);
+        g.fillCircle(Math.cos(ca) * cd, Math.sin(ca) * cd, 1.8);
+      }
+    }
+
+    // 9. Reverse side browned markings if flipped
     if (this.isFlipped) {
       g.fillStyle(0x873600, 0.35);
       g.fillCircle(10, -15, 35);
@@ -1002,7 +1199,17 @@ export class DosaSurface {
         g.lineStyle(2.4, colors.rimColor, 0.95);
         g.strokeTriangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
 
-        // Potato masala peeking out from the top corner opening!
+        // Peeking fillings from the top corner opening!
+        if (this.appliedToppings.has('mysore_paste')) {
+          g.fillStyle(0xc0392b, 0.9);
+          g.fillEllipse(0, -82, 14, 8);
+        }
+        if (this.appliedToppings.has('paneer_masala')) {
+          g.fillStyle(0xfffdf5, 0.95);
+          g.fillRect(-7, -84, 14, 11);
+          g.fillStyle(0x17202a, 0.9);
+          g.fillCircle(-2, -80, 1.4);
+        }
         if (this.appliedToppings.has('potato_masala')) {
           g.fillStyle(0xf1c40f, 0.95);
           g.fillEllipse(0, -78, 16, 9);
@@ -1015,7 +1222,7 @@ export class DosaSurface {
       }
 
       case 'half_moon': {
-        // Ghee Podi Roast Half-Moon Fold
+        // Ghee Podi Roast / Cheese / Coconut Half-Moon Fold
         const r = 118;
         // Drop shadow
         g.fillStyle(0x000000, 0.45);
@@ -1054,10 +1261,23 @@ export class DosaSurface {
         g.arc(0, 10, r, Math.PI, 0, false);
         g.strokePath();
 
-        // Spices peeking out along the seam
+        // Spices, cheese, or coconut peeking out along the seam
         if (this.appliedToppings.has('idli_podi')) {
           g.fillStyle(0x900c3f, 0.9);
           g.fillRoundedRect(-75, 8, 150, 6, 3);
+        }
+        if (this.appliedToppings.has('amul_cheese')) {
+          g.fillStyle(0xfef9e7, 0.95);
+          g.fillRoundedRect(-85, 8, 170, 7, 3);
+          g.fillStyle(0x2ecc71, 0.9);
+          g.fillCircle(-15, 11, 2.5);
+          g.fillCircle(25, 11, 2.5);
+        }
+        if (this.appliedToppings.has('fresh_coconut')) {
+          g.fillStyle(0xffffff, 0.95);
+          g.fillRoundedRect(-70, 8, 140, 6, 3);
+          g.fillStyle(0x27ae60, 0.9);
+          g.fillCircle(0, 11, 1.8);
         }
         break;
       }
@@ -1310,5 +1530,13 @@ export class DosaSurface {
       case 'PLATED':
         return '✨ SERVED FRESH ON BANANA LEAF PLATTER! ✨';
     }
+  }
+
+  public getContainer(): Phaser.GameObjects.Container {
+    return this.container;
+  }
+
+  public setOnPlatedClick(cb: () => void): void {
+    this.onPlatedClick = cb;
   }
 }

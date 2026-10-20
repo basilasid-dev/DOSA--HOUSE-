@@ -22,7 +22,7 @@ export class SettingsModal extends Phaser.GameObjects.Container {
     this.add(this.panel);
 
     const modalW = 680;
-    const modalH = 500;
+    const modalH = 540;
 
     // Panel Board Graphics
     const board = scene.add.graphics();
@@ -49,14 +49,14 @@ export class SettingsModal extends Phaser.GameObjects.Container {
     this.panel.add(board);
 
     // Header Title
-    const title = scene.add.text(0, -modalH / 2 + 36, 'RESTAURANT SETTINGS', {
+    const title = scene.add.text(0, -modalH / 2 + 34, 'RESTAURANT SETTINGS', {
       fontFamily: THEME.fonts.title,
-      fontSize: '28px',
+      fontSize: '27px',
       color: THEME.colors.teakWoodHex
     }).setOrigin(0.5, 0);
     this.panel.add(title);
 
-    const sub = scene.add.text(0, -modalH / 2 + 74, 'Customize your kitchen ambience & controls', {
+    const sub = scene.add.text(0, -modalH / 2 + 70, 'Customize your kitchen ambience, volume & controls', {
       fontFamily: THEME.fonts.body,
       fontSize: '13px',
       color: THEME.colors.terracottaHex
@@ -64,7 +64,7 @@ export class SettingsModal extends Phaser.GameObjects.Container {
     this.panel.add(sub);
 
     // Close Button
-    const closeBtn = scene.add.image(modalW / 2 - 36, -modalH / 2 + 36, 'icon_close');
+    const closeBtn = scene.add.image(modalW / 2 - 36, -modalH / 2 + 34, 'icon_close');
     closeBtn.setInteractive({ useHandCursor: true });
     closeBtn.on('pointerover', () => closeBtn.setScale(1.15));
     closeBtn.on('pointerout', () => closeBtn.setScale(1.0));
@@ -75,47 +75,61 @@ export class SettingsModal extends Phaser.GameObjects.Container {
     this.panel.add(closeBtn);
 
     // Settings Controls List
-    let startY = -modalH / 2 + 120;
-    const rowH = 60;
+    let currentY = -modalH / 2 + 115;
+    const rowGap = 56;
 
-    // 1. Sound FX Toggle
+    // 1. Master Audio Mute Toggle
     this.createToggleRow(
       scene,
       0,
-      startY,
-      'Sizzling Sound FX',
-      'Realistic tawa sizzle, clicks & kitchen clatter',
-      !sound.isMuted(),
-      (enabled) => {
-        sound.setMuted(!enabled);
-        if (enabled) sound.playSizzle(0.5);
+      currentY,
+      'Master Audio Mute',
+      'Quickly mute or enable all audio & background music',
+      sound.isMuted(),
+      (isMuted) => {
+        sound.setMuted(isMuted);
       }
     );
 
-    // 2. Music / Cozy Ambience Toggle
-    startY += rowH;
-    let musicOn = true;
-    this.createToggleRow(
+    // 2. Sizzling Sound FX Volume Slider
+    currentY += rowGap;
+    this.createSliderRow(
       scene,
       0,
-      startY,
-      'Cozy Cafe Ambience',
-      'Warm acoustic background atmosphere',
-      musicOn,
-      (enabled) => {
-        musicOn = enabled;
-        sound.setMusicVolume(enabled ? 0.5 : 0);
+      currentY,
+      '🔊 Sizzling Sound FX',
+      'Tawa sizzle, wooden clicks, bells & spatula scrapes',
+      sound.getSFXVolume(),
+      (vol) => {
+        sound.setSFXVolume(vol);
+      },
+      () => {
+        sound.playClick();
       }
     );
 
-    // 3. Screen Shake / Juicy FX Toggle
-    startY += rowH;
+    // 3. Cozy Cafe Ambience Music Volume Slider
+    currentY += rowGap;
+    this.createSliderRow(
+      scene,
+      0,
+      currentY,
+      '🎵 Carnatic Ambience Music',
+      'Warm tanpura drone & relaxing Mohanam flute melody',
+      sound.getMusicVolume(),
+      (vol) => {
+        sound.setMusicVolume(vol);
+      }
+    );
+
+    // 4. Screen Shake / Juicy FX Toggle
+    currentY += rowGap;
     let juicyFX = true;
     this.createToggleRow(
       scene,
       0,
-      startY,
-      'Juicy Visual Effects',
+      currentY,
+      '✨ Juicy Visual Effects',
       'Steam puffs, golden glows & springy button animations',
       juicyFX,
       (enabled) => {
@@ -123,38 +137,38 @@ export class SettingsModal extends Phaser.GameObjects.Container {
       }
     );
 
-    // 4. Fullscreen Button
-    startY += rowH;
-    const fsContainer = scene.add.container(0, startY);
+    // 5. Fullscreen Button
+    currentY += 52;
+    const fsContainer = scene.add.container(0, currentY);
     const fsBtnBg = scene.add.graphics();
-    fsBtnBg.fillStyle(THEME.colors.teakWood, 0.9);
-    fsBtnBg.fillRoundedRect(-260, -20, 520, 42, 8);
-    fsBtnBg.lineStyle(1.5, THEME.colors.brass, 0.8);
-    fsBtnBg.strokeRoundedRect(-260, -20, 520, 42, 8);
+    fsBtnBg.fillStyle(THEME.colors.teakWood, 0.92);
+    fsBtnBg.fillRoundedRect(-260, -18, 520, 38, 8);
+    fsBtnBg.lineStyle(1.5, THEME.colors.brass, 0.85);
+    fsBtnBg.strokeRoundedRect(-260, -18, 520, 38, 8);
     fsContainer.add(fsBtnBg);
 
-    const fsText = scene.add.text(0, 0, '⛶  TOGGLE FULLSCREEN DISPLAY', {
+    const fsText = scene.add.text(0, 1, '⛶  TOGGLE FULLSCREEN DISPLAY', {
       fontFamily: THEME.fonts.title,
-      fontSize: '15px',
+      fontSize: '14px',
       color: THEME.colors.turmericBrightHex
     }).setOrigin(0.5);
     fsContainer.add(fsText);
 
-    fsContainer.setSize(520, 42);
-    fsContainer.setInteractive(new Phaser.Geom.Rectangle(-260, -20, 520, 42), Phaser.Geom.Rectangle.Contains);
+    fsContainer.setSize(520, 38);
+    fsContainer.setInteractive(new Phaser.Geom.Rectangle(-260, -18, 520, 38), Phaser.Geom.Rectangle.Contains);
     fsContainer.on('pointerover', () => {
       fsBtnBg.clear();
       fsBtnBg.fillStyle(THEME.colors.terracotta, 1);
-      fsBtnBg.fillRoundedRect(-260, -20, 520, 42, 8);
+      fsBtnBg.fillRoundedRect(-260, -18, 520, 38, 8);
       fsBtnBg.lineStyle(2, THEME.colors.brassBright, 1);
-      fsBtnBg.strokeRoundedRect(-260, -20, 520, 42, 8);
+      fsBtnBg.strokeRoundedRect(-260, -18, 520, 38, 8);
     });
     fsContainer.on('pointerout', () => {
       fsBtnBg.clear();
-      fsBtnBg.fillStyle(THEME.colors.teakWood, 0.9);
-      fsBtnBg.fillRoundedRect(-260, -20, 520, 42, 8);
-      fsBtnBg.lineStyle(1.5, THEME.colors.brass, 0.8);
-      fsBtnBg.strokeRoundedRect(-260, -20, 520, 42, 8);
+      fsBtnBg.fillStyle(THEME.colors.teakWood, 0.92);
+      fsBtnBg.fillRoundedRect(-260, -18, 520, 38, 8);
+      fsBtnBg.lineStyle(1.5, THEME.colors.brass, 0.85);
+      fsBtnBg.strokeRoundedRect(-260, -18, 520, 38, 8);
     });
     fsContainer.on('pointerdown', () => {
       sound.playClick();
@@ -166,32 +180,31 @@ export class SettingsModal extends Phaser.GameObjects.Container {
     });
     this.panel.add(fsContainer);
 
-    // About & Cultural Tribute Card
-    const aboutY = modalH / 2 - 80;
+    // 6. Cultural Tribute Card
+    const aboutY = modalH / 2 - 58;
     const aboutBox = scene.add.graphics();
     aboutBox.fillStyle(THEME.colors.curryGreen, 0.08);
-    aboutBox.fillRoundedRect(-modalW / 2 + 40, aboutY - 24, modalW - 80, 70, 8);
+    aboutBox.fillRoundedRect(-modalW / 2 + 40, aboutY - 20, modalW - 80, 54, 8);
     aboutBox.lineStyle(1, THEME.colors.curryGreen, 0.3);
-    aboutBox.strokeRoundedRect(-modalW / 2 + 40, aboutY - 24, modalW - 80, 70, 8);
+    aboutBox.strokeRoundedRect(-modalW / 2 + 40, aboutY - 20, modalW - 80, 54, 8);
     this.panel.add(aboutBox);
 
-    const tributeTitle = scene.add.text(0, aboutY - 14, 'DOSA HOUSE • CRAFTED WITH LOVE & GHEE', {
+    const tributeTitle = scene.add.text(0, aboutY - 12, 'DOSA HOUSE • CRAFTED WITH LOVE & GHEE', {
       fontFamily: THEME.fonts.title,
-      fontSize: '13px',
+      fontSize: '12px',
       color: THEME.colors.curryGreenHex
     }).setOrigin(0.5, 0);
     this.panel.add(tributeTitle);
 
     const tributeText = scene.add.text(
       0,
-      aboutY + 8,
-      'A cozy ode to South Indian tiffin culture — crispy paper roasts, frothy filter coffee,\nand fragrant sambar bubbling over generations of artisanal tawa mastery.',
+      aboutY + 6,
+      'Crispy paper roasts, frothy filter coffee, and fragrant sambar bubbling over generations of artisanal tawa mastery.',
       {
         fontFamily: THEME.fonts.body,
-        fontSize: '11.5px',
+        fontSize: '11px',
         color: '#344535',
-        align: 'center',
-        lineSpacing: 3
+        align: 'center'
       }
     ).setOrigin(0.5, 0);
     this.panel.add(tributeText);
@@ -211,6 +224,117 @@ export class SettingsModal extends Phaser.GameObjects.Container {
     scene.add.existing(this);
   }
 
+  /**
+   * Reusable interactive slider for volume controls
+   */
+  private createSliderRow(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    title: string,
+    desc: string,
+    initialVal: number,
+    onChange: (val: number) => void,
+    onPreview?: () => void
+  ): void {
+    const row = scene.add.container(x, y);
+
+    const titleText = scene.add.text(-250, -13, title, {
+      fontFamily: THEME.fonts.title,
+      fontSize: '16px',
+      color: THEME.colors.teakWoodHex
+    });
+    row.add(titleText);
+
+    const descText = scene.add.text(-250, 7, desc, {
+      fontFamily: THEME.fonts.body,
+      fontSize: '11px',
+      color: '#554433'
+    });
+    row.add(descText);
+
+    // Slider bar geometry
+    const trackX = 110;
+    const trackY = 0;
+    const trackW = 120;
+    const trackH = 10;
+
+    let currentVal = initialVal;
+
+    const sliderG = scene.add.graphics();
+    row.add(sliderG);
+
+    const pctText = scene.add.text(trackX + trackW + 18, 0, `${Math.round(currentVal * 100)}%`, {
+      fontFamily: THEME.fonts.body,
+      fontSize: '12px',
+      fontStyle: 'bold',
+      color: THEME.colors.teakWoodHex
+    }).setOrigin(0, 0.5);
+    row.add(pctText);
+
+    const drawSlider = () => {
+      sliderG.clear();
+      // Background track
+      sliderG.fillStyle(0xDDD3C0, 1);
+      sliderG.fillRoundedRect(trackX, trackY - trackH / 2, trackW, trackH, 5);
+      sliderG.lineStyle(1.5, THEME.colors.brass, 0.6);
+      sliderG.strokeRoundedRect(trackX, trackY - trackH / 2, trackW, trackH, 5);
+
+      // Filled portion
+      const fillW = Math.max(0, Math.min(trackW, trackW * currentVal));
+      if (fillW > 0) {
+        sliderG.fillStyle(THEME.colors.turmeric, 1);
+        sliderG.fillRoundedRect(trackX, trackY - trackH / 2, fillW, trackH, 5);
+      }
+
+      // Thumb knob
+      const knobX = trackX + fillW;
+      sliderG.fillStyle(THEME.colors.brassBright, 1);
+      sliderG.fillCircle(knobX, trackY, 9);
+      sliderG.lineStyle(1.5, THEME.colors.teakWood, 0.9);
+      sliderG.strokeCircle(knobX, trackY, 9);
+    };
+
+    drawSlider();
+
+    // Hitbox for slider interaction
+    const hitZone = scene.add.rectangle(trackX + trackW / 2, trackY, trackW + 24, 30, 0x000000, 0);
+    hitZone.setInteractive({ useHandCursor: true });
+    row.add(hitZone);
+
+    let isDragging = false;
+    const updateFromPointer = (pointerX: number) => {
+      // Calculate local x relative to row container
+      const localX = pointerX - (this.panel.x + x);
+      const ratio = Phaser.Math.Clamp((localX - trackX) / trackW, 0, 1);
+      currentVal = ratio;
+      pctText.setText(`${Math.round(currentVal * 100)}%`);
+      drawSlider();
+      onChange(currentVal);
+    };
+
+    hitZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      isDragging = true;
+      updateFromPointer(pointer.x);
+      onPreview?.();
+    });
+
+    scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (isDragging) {
+        updateFromPointer(pointer.x);
+      }
+    });
+
+    scene.input.on('pointerup', () => {
+      if (isDragging) {
+        isDragging = false;
+        onPreview?.();
+      }
+    });
+
+    this.panel.add(row);
+  }
+
   private createToggleRow(
     scene: Phaser.Scene,
     x: number,
@@ -222,16 +346,16 @@ export class SettingsModal extends Phaser.GameObjects.Container {
   ): void {
     const row = scene.add.container(x, y);
 
-    const titleText = scene.add.text(-250, -14, title, {
+    const titleText = scene.add.text(-250, -13, title, {
       fontFamily: THEME.fonts.title,
-      fontSize: '17px',
+      fontSize: '16px',
       color: THEME.colors.teakWoodHex
     });
     row.add(titleText);
 
-    const descText = scene.add.text(-250, 8, desc, {
+    const descText = scene.add.text(-250, 7, desc, {
       fontFamily: THEME.fonts.body,
-      fontSize: '11.5px',
+      fontSize: '11px',
       color: '#554433'
     });
     row.add(descText);
@@ -243,21 +367,21 @@ export class SettingsModal extends Phaser.GameObjects.Container {
       toggleG.clear();
       // Track
       toggleG.fillStyle(isOn ? THEME.colors.curryGreen : 0xAAAAAA, 1);
-      toggleG.fillRoundedRect(200, -12, 54, 26, 13);
-      toggleG.lineStyle(2, THEME.colors.brass, 0.7);
-      toggleG.strokeRoundedRect(200, -12, 54, 26, 13);
+      toggleG.fillRoundedRect(190, -11, 52, 24, 12);
+      toggleG.lineStyle(1.8, THEME.colors.brass, 0.7);
+      toggleG.strokeRoundedRect(190, -11, 52, 24, 12);
       // Thumb
       toggleG.fillStyle(THEME.colors.cream, 1);
-      toggleG.fillCircle(isOn ? 240 : 214, 1, 10);
+      toggleG.fillCircle(isOn ? 228 : 203, 1, 9);
       toggleG.lineStyle(1.5, THEME.colors.teakWood, 0.4);
-      toggleG.strokeCircle(isOn ? 240 : 214, 1, 10);
+      toggleG.strokeCircle(isOn ? 228 : 203, 1, 9);
     };
 
     drawSwitch();
     row.add(toggleG);
 
     // Interactive hitbox for switch
-    const hitArea = scene.add.rectangle(227, 1, 60, 32, 0x000000, 0);
+    const hitArea = scene.add.rectangle(216, 1, 58, 28, 0x000000, 0);
     hitArea.setInteractive({ useHandCursor: true });
     hitArea.on('pointerdown', () => {
       isOn = !isOn;

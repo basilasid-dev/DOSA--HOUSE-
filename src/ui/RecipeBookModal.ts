@@ -15,12 +15,15 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
   private detailsContainer: Phaser.GameObjects.Container;
   private listContainer: Phaser.GameObjects.Container;
   private pageIndicatorText: Phaser.GameObjects.Text;
+  private cashBalanceText?: Phaser.GameObjects.Text;
+  private onCookRecipe?: (recipe: Recipe) => void;
 
-  constructor(scene: Phaser.Scene, onClose: () => void) {
+  constructor(scene: Phaser.Scene, onClose: () => void, onCookRecipe?: (recipe: Recipe) => void) {
     super(scene, 0, 0);
 
     const { width, height } = THEME.dimensions;
     this.selectedRecipe = RECIPES[0];
+    this.onCookRecipe = onCookRecipe;
 
     // Dark backdrop overlay
     this.backdrop = scene.add.rectangle(width / 2, height / 2, width, height, 0x0a0502, 0.8);
@@ -62,20 +65,29 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
 
     this.panel.add(boardGraphics);
 
-    // Header Title
-    const headerTitle = scene.add.text(-modalW / 2 + 26, -modalH / 2 + 26, 'ROYAL RECIPE BOOK (10 DOSAS)', {
+    // Header Title (compact within left sidebar column)
+    const headerTitle = scene.add.text(-modalW / 2 + 24, -modalH / 2 + 24, 'ROYAL RECIPES', {
       fontFamily: THEME.fonts.title,
-      fontSize: '24px',
+      fontSize: '20px',
       color: THEME.colors.teakWoodHex
     });
     this.panel.add(headerTitle);
 
-    const subHeader = scene.add.text(-modalW / 2 + 26, -modalH / 2 + 56, 'Heritage tawa crepes, ingredients & chef techniques', {
+    const subHeader = scene.add.text(-modalW / 2 + 24, -modalH / 2 + 50, '10 Heritage Crepe Varieties', {
       fontFamily: THEME.fonts.body,
-      fontSize: '11.5px',
+      fontSize: '11px',
       color: THEME.colors.terracottaHex
     });
     this.panel.add(subHeader);
+
+    // Cash Treasury Display in Header
+    const coins = UpgradeService.getInstance().getCoins();
+    this.cashBalanceText = scene.add.text(modalW / 2 - 80, -modalH / 2 + 32, `💰 CASH: ₹ ${coins}`, {
+      fontFamily: THEME.fonts.title,
+      fontSize: '14px',
+      color: THEME.colors.turmericGoldHex
+    }).setOrigin(1, 0.5);
+    this.panel.add(this.cashBalanceText);
 
     // Close Button
     const closeBtn = scene.add.image(modalW / 2 - 32, -modalH / 2 + 32, 'icon_close');
@@ -133,7 +145,7 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
     this.panel.add(nextBtn);
 
     // Details Container (Right side)
-    this.detailsContainer = scene.add.container(-modalW / 2 + 330, -modalH / 2 + 30);
+    this.detailsContainer = scene.add.container(-modalW / 2 + 335, -modalH / 2 + 26);
     this.panel.add(this.detailsContainer);
 
     // Initial render
@@ -313,10 +325,10 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
     this.detailsContainer.add(desc);
 
     // Dish Image (Right Top)
-    const photoX = 575;
-    const photoY = 68;
-    const photoW = 270;
-    const photoH = 185;
+    const photoX = 560;
+    const photoY = 75;
+    const photoW = 255;
+    const photoH = 170;
 
     const photoShadow = scene.add.graphics();
     photoShadow.fillStyle(0x000000, 0.4);
@@ -337,44 +349,105 @@ export class RecipeBookModal extends Phaser.GameObjects.Container {
     photoBorder.strokeRoundedRect(photoX - photoW / 2, photoY - photoH / 2, photoW, photoH, 10);
     this.detailsContainer.add(photoBorder);
 
-    // If Locked, show Unlock Button Overlay on Photo
-    if (!isUnlocked) {
+    // If Unlocked, show Unlocked Badge and "COOK THIS RECIPE" Button
+    if (isUnlocked) {
+      const unlockedBadge = scene.add.text(photoX, photoY - photoH / 2 + 14, '✨ HERITAGE RECIPE UNLOCKED', {
+        fontFamily: THEME.fonts.body,
+        fontSize: '10px',
+        fontStyle: 'bold',
+        color: '#FFFFFF',
+        backgroundColor: '#1E8449DD',
+        padding: { x: 8, y: 3 }
+      }).setOrigin(0.5);
+      this.detailsContainer.add(unlockedBadge);
+
+      if (this.onCookRecipe) {
+        const cookBtn = scene.add.container(photoX, photoY + photoH / 2 + 20);
+        const cookBg = scene.add.graphics();
+        cookBg.fillStyle(THEME.colors.terracotta, 1);
+        cookBg.fillRoundedRect(-120, -14, 240, 28, 7);
+        cookBg.lineStyle(2, THEME.colors.brassBright, 0.95);
+        cookBg.strokeRoundedRect(-120, -14, 240, 28, 7);
+        cookBtn.add(cookBg);
+
+        const cookTxt = scene.add.text(0, 0, '🍳 COOK THIS RECIPE ➔', {
+          fontFamily: THEME.fonts.title,
+          fontSize: '11.5px',
+          color: THEME.colors.creamHex
+        }).setOrigin(0.5);
+        cookBtn.add(cookTxt);
+
+        cookBtn.setSize(240, 28);
+        cookBtn.setInteractive({ useHandCursor: true });
+        cookBtn.on('pointerover', () => cookBtn.setScale(1.05));
+        cookBtn.on('pointerout', () => cookBtn.setScale(1.0));
+        cookBtn.on('pointerdown', () => {
+          SoundFX.getInstance().playClick();
+          this.closeModal(() => {
+            this.onCookRecipe?.(r);
+          });
+        });
+
+        this.detailsContainer.add(cookBtn);
+      }
+    } else {
+      // If Locked, show Unlock Button Overlay on Photo
       const lockOverlay = scene.add.container(photoX, photoY);
       const lBg = scene.add.graphics();
-      lBg.fillStyle(0x000000, 0.65);
-      lBg.fillRoundedRect(-120, -50, 240, 100, 10);
+      lBg.fillStyle(0x000000, 0.72);
+      lBg.fillRoundedRect(-125, -60, 250, 120, 10);
       lBg.lineStyle(2, THEME.colors.brassBright, 0.9);
-      lBg.strokeRoundedRect(-120, -50, 240, 100, 10);
+      lBg.strokeRoundedRect(-125, -60, 250, 120, 10);
       lockOverlay.add(lBg);
 
-      const lTxt = scene.add.text(0, -22, '🔒 RECIPE LOCKED', {
+      const lTxt = scene.add.text(0, -36, '🔒 RECIPE LOCKED', {
         fontFamily: THEME.fonts.title,
-        fontSize: '15px',
+        fontSize: '14.5px',
         color: THEME.colors.turmericBrightHex
       }).setOrigin(0.5);
       lockOverlay.add(lTxt);
 
-      const canAfford = upgradeService.getCoins() >= r.unlockCostCoins;
-      const uBtn = scene.add.container(0, 16);
-      const uBtnBg = scene.add.graphics();
-      uBtnBg.fillStyle(canAfford ? THEME.colors.curryGreen : 0x777777, 1);
-      uBtnBg.fillRoundedRect(-95, -14, 190, 28, 6);
-      uBtn.add(uBtnBg);
-
-      const uBtnTxt = scene.add.text(0, 0, canAfford ? `UNLOCK FOR ₹ ${r.unlockCostCoins}` : `NEED ₹ ${r.unlockCostCoins}`, {
-        fontFamily: THEME.fonts.title,
-        fontSize: '11px',
+      const reqTxt = scene.add.text(0, -16, `Unlocks at Day ${r.requiredLevel} Rush or Buy Now:`, {
+        fontFamily: THEME.fonts.body,
+        fontSize: '9.5px',
         color: THEME.colors.creamHex
       }).setOrigin(0.5);
+      lockOverlay.add(reqTxt);
+
+      const playerCoins = upgradeService.getCoins();
+      const canAfford = playerCoins >= r.unlockCostCoins;
+      const uBtn = scene.add.container(0, 22);
+      const uBtnBg = scene.add.graphics();
+      uBtnBg.fillStyle(canAfford ? THEME.colors.curryGreen : 0x666666, 1);
+      uBtnBg.fillRoundedRect(-105, -15, 210, 30, 7);
+      uBtnBg.lineStyle(1.5, THEME.colors.brassBright, canAfford ? 0.95 : 0.5);
+      uBtnBg.strokeRoundedRect(-105, -15, 210, 30, 7);
+      uBtn.add(uBtnBg);
+
+      const uBtnTxt = scene.add.text(
+        0,
+        0,
+        canAfford ? `🔓 UNLOCK FOR ₹ ${r.unlockCostCoins}` : `NEED ₹ ${r.unlockCostCoins} (HAVE ₹ ${playerCoins})`,
+        {
+          fontFamily: THEME.fonts.title,
+          fontSize: '10.5px',
+          color: THEME.colors.creamHex
+        }
+      ).setOrigin(0.5);
       uBtn.add(uBtnTxt);
 
       if (canAfford) {
-        uBtn.setSize(190, 28);
+        uBtn.setSize(210, 30);
         uBtn.setInteractive({ useHandCursor: true });
+        uBtn.on('pointerover', () => uBtn.setScale(1.05));
+        uBtn.on('pointerout', () => uBtn.setScale(1.0));
         uBtn.on('pointerdown', () => {
           if (upgradeService.deductCoins(r.unlockCostCoins)) {
             registry.unlock(r.id);
             SoundFX.getInstance().playBell();
+            if (this.cashBalanceText) {
+              this.cashBalanceText.setText(`💰 CASH: ₹ ${upgradeService.getCoins()}`);
+            }
             this.renderRecipeList(scene);
             this.renderRecipeDetails(scene);
           }

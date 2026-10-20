@@ -685,6 +685,391 @@ export class AssetGenerator {
     mctx.restore();
 
     scene.textures.addCanvas('photo_mysore_masala', mCanvas);
+
+    // 3. Giant Paper Ghee Roast Photo Card (400x300)
+    const pCanvas = document.createElement('canvas');
+    pCanvas.width = 400;
+    pCanvas.height = 300;
+    const pctx = pCanvas.getContext('2d')!;
+    pctx.fillStyle = uWood;
+    pctx.fillRect(0, 0, 400, 300);
+
+    // Two banana leaves overlapping
+    pctx.save();
+    pctx.translate(200, 150);
+    pctx.fillStyle = '#1E8449';
+    pctx.beginPath();
+    pctx.ellipse(-50, 10, 150, 95, -0.1, 0, Math.PI * 2);
+    pctx.ellipse(60, 5, 140, 90, 0.1, 0, Math.PI * 2);
+    pctx.fill();
+
+    // Leaf veins
+    pctx.strokeStyle = '#52BE80';
+    pctx.lineWidth = 2;
+    pctx.beginPath();
+    pctx.moveTo(-180, 10);
+    pctx.lineTo(180, 5);
+    pctx.stroke();
+
+    // Giant 3-foot rolled flute cylinder
+    const fluteGrad = pctx.createLinearGradient(-170, -25, 170, 25);
+    fluteGrad.addColorStop(0, '#F5B041');
+    fluteGrad.addColorStop(0.3, '#FAD7A0');
+    fluteGrad.addColorStop(0.6, '#E59866');
+    fluteGrad.addColorStop(1, '#D35400');
+
+    pctx.fillStyle = fluteGrad;
+    pctx.beginPath();
+    pctx.roundRect(-165, -28, 330, 56, 18);
+    pctx.fill();
+
+    // Crispy golden roast ridges
+    pctx.strokeStyle = '#935116';
+    pctx.lineWidth = 2.5;
+    pctx.beginPath();
+    pctx.moveTo(-150, -14);
+    pctx.lineTo(150, -14);
+    pctx.moveTo(-155, 0);
+    pctx.lineTo(155, 0);
+    pctx.moveTo(-150, 14);
+    pctx.lineTo(150, 14);
+    pctx.stroke();
+
+    // Glistening golden ghee streak along top
+    pctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+    pctx.fillRect(-140, -22, 280, 7);
+
+    // Rolled spiral ends
+    pctx.fillStyle = '#784212';
+    pctx.beginPath();
+    pctx.ellipse(-162, 0, 6, 22, 0, 0, Math.PI * 2);
+    pctx.ellipse(162, 0, 6, 22, 0, 0, Math.PI * 2);
+    pctx.fill();
+
+    // Steel bowls (chutney & sambar)
+    pctx.fillStyle = '#BDC3C7';
+    pctx.beginPath();
+    pctx.arc(-80, 80, 24, 0, Math.PI * 2);
+    pctx.arc(0, 80, 24, 0, Math.PI * 2);
+    pctx.arc(80, 80, 24, 0, Math.PI * 2);
+    pctx.fill();
+
+    // White coconut, red tomato, sambar
+    pctx.fillStyle = '#FAFAF5';
+    pctx.beginPath();
+    pctx.arc(-80, 80, 20, 0, Math.PI * 2);
+    pctx.fill();
+
+    pctx.fillStyle = '#C0392B';
+    pctx.beginPath();
+    pctx.arc(0, 80, 20, 0, Math.PI * 2);
+    pctx.fill();
+
+    pctx.fillStyle = '#D35400';
+    pctx.beginPath();
+    pctx.arc(80, 80, 20, 0, Math.PI * 2);
+    pctx.fill();
+
+    pctx.restore();
+    scene.textures.addCanvas('photo_paper_roast', pCanvas);
+
+    // 4. Chettinad Spicy Paneer Dosa Photo Card (400x300)
+    const cCanvas = document.createElement('canvas');
+    cCanvas.width = 400;
+    cCanvas.height = 300;
+    const cctx = cCanvas.getContext('2d')!;
+    cctx.fillStyle = uWood;
+    cctx.fillRect(0, 0, 400, 300);
+
+    cctx.save();
+    cctx.translate(200, 150);
+    cctx.fillStyle = '#196F3D';
+    cctx.beginPath();
+    cctx.ellipse(0, 0, 185, 125, 0, 0, Math.PI * 2);
+    cctx.fill();
+
+    // Triangle Envelope Dosa
+    cctx.fillStyle = '#D68910';
+    cctx.beginPath();
+    cctx.moveTo(-130, 55);
+    cctx.lineTo(15, -80);
+    cctx.lineTo(85, 55);
+    cctx.closePath();
+    cctx.fill();
+
+    // Pepper roast sheen
+    const cGrad = cctx.createLinearGradient(-130, 55, 85, 55);
+    cGrad.addColorStop(0, '#F5B041');
+    cGrad.addColorStop(0.5, '#E59866');
+    cGrad.addColorStop(1, '#BA4A00');
+    cctx.fillStyle = cGrad;
+    cctx.fill();
+
+    // Spicy paneer cubes spilling from center
+    const paneerCubes = [
+      { x: -35, y: -5, w: 18, h: 14 },
+      { x: -10, y: 12, w: 20, h: 15 },
+      { x: 15, y: -2, w: 17, h: 13 },
+      { x: -20, y: 25, w: 16, h: 14 }
+    ];
+    paneerCubes.forEach(pc => {
+      cctx.fillStyle = '#FEF9E7';
+      cctx.fillRect(pc.x, pc.y, pc.w, pc.h);
+      cctx.strokeStyle = '#935116';
+      cctx.strokeRect(pc.x, pc.y, pc.w, pc.h);
+    });
+
+    // Cracked black peppercorns & fennel specks
+    cctx.fillStyle = '#17202A';
+    for (let k = 0; k < 18; k++) {
+      cctx.beginPath();
+      cctx.arc(-40 + (k * 6), 5 + (k % 4) * 8, 2, 0, Math.PI * 2);
+      cctx.fill();
+    }
+
+    // Fresh coriander sprig
+    cctx.fillStyle = '#27AE60';
+    cctx.beginPath();
+    cctx.ellipse(-5, 0, 10, 5, 0.4, 0, Math.PI * 2);
+    cctx.fill();
+
+    // Chutney bowl on side
+    cctx.fillStyle = '#BDC3C7';
+    cctx.beginPath();
+    cctx.arc(130, 0, 30, 0, Math.PI * 2);
+    cctx.fill();
+    cctx.fillStyle = '#27AE60'; // Mint chutney
+    cctx.beginPath();
+    cctx.arc(130, 0, 25, 0, Math.PI * 2);
+    cctx.fill();
+
+    cctx.restore();
+    scene.textures.addCanvas('photo_chettinad_paneer', cCanvas);
+
+    // 5. Amul Cheese & Green Chilli Dosa Photo Card (400x300)
+    const chCanvas = document.createElement('canvas');
+    chCanvas.width = 400;
+    chCanvas.height = 300;
+    const chctx = chCanvas.getContext('2d')!;
+    chctx.fillStyle = uWood;
+    chctx.fillRect(0, 0, 400, 300);
+
+    chctx.save();
+    chctx.translate(200, 150);
+    chctx.fillStyle = '#1E8449';
+    chctx.beginPath();
+    chctx.ellipse(0, 0, 185, 125, 0, 0, Math.PI * 2);
+    chctx.fill();
+
+    // Half Moon Golden Dosa
+    chctx.fillStyle = '#F39C12';
+    chctx.beginPath();
+    chctx.arc(-20, 20, 105, Math.PI, 0, false);
+    chctx.closePath();
+    chctx.fill();
+
+    const chGrad = chctx.createRadialGradient(-20, 15, 20, -20, 15, 100);
+    chGrad.addColorStop(0, '#FAD7A0');
+    chGrad.addColorStop(0.5, '#F5B041');
+    chGrad.addColorStop(1, '#D35400');
+    chctx.fillStyle = chGrad;
+    chctx.fill();
+
+    // Molten white/golden melted cheese strings pulling from the seam
+    chctx.strokeStyle = '#FEF9E7';
+    chctx.lineWidth = 6;
+    chctx.lineCap = 'round';
+    chctx.beginPath();
+    chctx.moveTo(-110, 22);
+    chctx.quadraticCurveTo(-60, 45, 0, 22);
+    chctx.quadraticCurveTo(45, 48, 80, 22);
+    chctx.stroke();
+
+    chctx.strokeStyle = '#F9E79F';
+    chctx.lineWidth = 4;
+    chctx.beginPath();
+    chctx.moveTo(-90, 24);
+    chctx.quadraticCurveTo(-40, 52, 20, 24);
+    chctx.stroke();
+
+    // Sliced spicy green chilli rounds
+    for (let g = 0; g < 9; g++) {
+      const gx = -80 + g * 18;
+      const gy = 18 + (g % 3) * 6;
+      chctx.fillStyle = '#27AE60';
+      chctx.beginPath();
+      chctx.arc(gx, gy, 4.5, 0, Math.PI * 2);
+      chctx.fill();
+      chctx.fillStyle = '#FFFFFF';
+      chctx.beginPath();
+      chctx.arc(gx, gy, 1.8, 0, Math.PI * 2);
+      chctx.fill();
+    }
+
+    // Tomato Thokku bowl on side
+    chctx.fillStyle = '#BDC3C7';
+    chctx.beginPath();
+    chctx.arc(130, 20, 30, 0, Math.PI * 2);
+    chctx.fill();
+    chctx.fillStyle = '#900C3F';
+    chctx.beginPath();
+    chctx.arc(130, 20, 25, 0, Math.PI * 2);
+    chctx.fill();
+
+    chctx.restore();
+    scene.textures.addCanvas('photo_cheese_chilli', chCanvas);
+
+    // 6. Lacy Rava Cumin Roast Photo Card (400x300)
+    const rCanvas = document.createElement('canvas');
+    rCanvas.width = 400;
+    rCanvas.height = 300;
+    const rctx = rCanvas.getContext('2d')!;
+    rctx.fillStyle = uWood;
+    rctx.fillRect(0, 0, 400, 300);
+
+    rctx.save();
+    rctx.translate(200, 150);
+    rctx.fillStyle = '#145A32';
+    rctx.beginPath();
+    rctx.ellipse(0, 0, 185, 125, 0, 0, Math.PI * 2);
+    rctx.fill();
+
+    // Wafer-thin net honeycomb semolina mesh
+    rctx.fillStyle = '#FAD7A0';
+    rctx.beginPath();
+    rctx.ellipse(-25, 0, 110, 85, 0, 0, Math.PI * 2);
+    rctx.fill();
+
+    // Hundreds of lacy honeycomb holes!
+    rctx.fillStyle = '#145A32';
+    for (let h = 0; h < 46; h++) {
+      const ha = (h * 2.39996) % (Math.PI * 2);
+      const hd = Math.sqrt((h + 1) / 46) * 78;
+      const hx = -25 + Math.cos(ha) * hd;
+      const hy = Math.sin(ha) * (hd * 0.75);
+      rctx.beginPath();
+      rctx.arc(hx, hy, 2 + (h % 3) * 1.5, 0, Math.PI * 2);
+      rctx.fill();
+    }
+
+    // Crunchy whole black peppercorns & cumin seeds
+    rctx.fillStyle = '#17202A';
+    for (let c = 0; c < 24; c++) {
+      const ca = (c * 1.7) % (Math.PI * 2);
+      const cd = 10 + (c * 3) % 75;
+      rctx.beginPath();
+      rctx.arc(-25 + Math.cos(ca) * cd, Math.sin(ca) * (cd * 0.7), 2.2, 0, Math.PI * 2);
+      rctx.fill();
+    }
+    rctx.fillStyle = '#784212';
+    for (let c = 0; c < 18; c++) {
+      const ca = (c * 2.1) % (Math.PI * 2);
+      const cd = 15 + (c * 3.5) % 70;
+      rctx.fillRect(-27 + Math.cos(ca) * cd, Math.sin(ca) * (cd * 0.7), 4, 1.5);
+    }
+
+    // Crispy golden outer rim
+    rctx.strokeStyle = '#B9770E';
+    rctx.lineWidth = 3;
+    rctx.beginPath();
+    rctx.ellipse(-25, 0, 110, 85, 0, 0, Math.PI * 2);
+    rctx.stroke();
+
+    // Trio of chutneys on right
+    rctx.fillStyle = '#BDC3C7';
+    rctx.beginPath();
+    rctx.arc(125, -35, 26, 0, Math.PI * 2);
+    rctx.arc(125, 35, 26, 0, Math.PI * 2);
+    rctx.fill();
+    rctx.fillStyle = '#FAFAF5';
+    rctx.beginPath();
+    rctx.arc(125, -35, 22, 0, Math.PI * 2);
+    rctx.fill();
+    rctx.fillStyle = '#E67E22';
+    rctx.beginPath();
+    rctx.arc(125, 35, 22, 0, Math.PI * 2);
+    rctx.fill();
+
+    rctx.restore();
+    scene.textures.addCanvas('photo_rava_crispy', rCanvas);
+
+    // 7. Sweet Jaggery Coconut Dosa Photo Card (400x300)
+    const jCanvas = document.createElement('canvas');
+    jCanvas.width = 400;
+    jCanvas.height = 300;
+    const jctx = jCanvas.getContext('2d')!;
+    jctx.fillStyle = uWood;
+    jctx.fillRect(0, 0, 400, 300);
+
+    jctx.save();
+    jctx.translate(200, 150);
+    jctx.fillStyle = '#196F3D';
+    jctx.beginPath();
+    jctx.ellipse(0, 0, 185, 125, 0, 0, Math.PI * 2);
+    jctx.fill();
+
+    // Dark caramelized palm jaggery crescent
+    const jGrad = jctx.createRadialGradient(-20, 15, 15, -20, 15, 95);
+    jGrad.addColorStop(0, '#E59866');
+    jGrad.addColorStop(0.5, '#BA4A00');
+    jGrad.addColorStop(0.85, '#78281F');
+    jGrad.addColorStop(1, '#4A235A');
+
+    jctx.fillStyle = jGrad;
+    jctx.beginPath();
+    jctx.arc(-20, 20, 100, Math.PI, 0, false);
+    jctx.closePath();
+    jctx.fill();
+
+    // Snowfall of freshly grated tender coconut flakes
+    jctx.fillStyle = '#FFFFFF';
+    for (let f = 0; f < 36; f++) {
+      const fa = Math.PI + (f / 36) * Math.PI;
+      const fd = 25 + (f % 5) * 14;
+      const fx = -20 + Math.cos(fa) * fd;
+      const fy = 20 - Math.sin(fa) * (fd * 0.75);
+      jctx.beginPath();
+      jctx.ellipse(fx, fy, 4, 1.8, f * 0.4, 0, Math.PI * 2);
+      jctx.fill();
+    }
+
+    // Crushed green cardamom specks
+    jctx.fillStyle = '#27AE60';
+    for (let cd = 0; cd < 14; cd++) {
+      const cda = Math.PI + (cd / 14) * Math.PI;
+      const cdd = 30 + (cd % 4) * 12;
+      jctx.beginPath();
+      jctx.arc(-20 + Math.cos(cda) * cdd, 20 - Math.sin(cda) * (cdd * 0.75), 1.6, 0, Math.PI * 2);
+      jctx.fill();
+    }
+
+    // Dollop of fresh churned white butter on top
+    jctx.fillStyle = '#FFFDF5';
+    jctx.beginPath();
+    jctx.ellipse(-20, -10, 16, 10, -0.2, 0, Math.PI * 2);
+    jctx.fill();
+
+    // Brass filter coffee dabarah set on right
+    jctx.fillStyle = '#F39C12';
+    jctx.beginPath();
+    jctx.arc(125, 15, 32, 0, Math.PI * 2);
+    jctx.fill();
+    jctx.fillStyle = '#D4AC0D';
+    jctx.beginPath();
+    jctx.arc(125, 15, 27, 0, Math.PI * 2);
+    jctx.fill();
+    // Frothy coffee center
+    jctx.fillStyle = '#6E2C00';
+    jctx.beginPath();
+    jctx.arc(125, 15, 20, 0, Math.PI * 2);
+    jctx.fill();
+    jctx.fillStyle = '#FAD7A0'; // foam froth
+    jctx.beginPath();
+    jctx.arc(125, 15, 12, 0, Math.PI * 2);
+    jctx.fill();
+
+    jctx.restore();
+    scene.textures.addCanvas('photo_jaggery_coconut', jCanvas);
   }
 
   /**

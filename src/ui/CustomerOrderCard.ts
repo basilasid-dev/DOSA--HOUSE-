@@ -157,11 +157,10 @@ export class CustomerOrderCard extends Phaser.GameObjects.Container {
       SoundFX.getInstance().playClick();
       if (!this.order.isAccepted) {
         this.acceptOrder();
-      } else {
-        this.onSelectCb();
-        // If a dosa is plated and player clicks this card, trigger serve callback
-        this.onServeCb?.(this.order);
       }
+      this.onSelectCb();
+      // If a dosa is plated and player clicks this card, trigger serve callback
+      this.onServeCb?.(this.order);
     });
 
     this.on('pointerover', () => {
@@ -359,19 +358,30 @@ export class CustomerOrderCard extends Phaser.GameObjects.Container {
     );
   }
 
+  private isPulsingWarning: boolean = false;
+  private warningTween?: Phaser.Tweens.Tween;
+
   private drawPatience(x: number, y: number, w: number, h: number): void {
     this.patienceBar.clear();
     const ratio = Math.max(0, this.order.patienceRemainingSec / this.order.timeLimitSec);
 
     let col: number = THEME.colors.curryGreen;
-    if (ratio < 0.3) {
+    if (ratio < 0.20) {
+      col = 0xE74C3C; // Urgent crimson
+    } else if (ratio < 0.35) {
       col = THEME.colors.terracotta;
-    } else if (ratio < 0.6) {
+    } else if (ratio < 0.65) {
       col = THEME.colors.turmeric;
     }
 
     this.patienceBar.fillStyle(col, 1);
     this.patienceBar.fillRoundedRect(x, y, w * ratio, h, 3);
+
+    // Glowing border when critical
+    if (ratio < 0.20) {
+      this.patienceBar.lineStyle(1.5, 0xFF3333, 0.9);
+      this.patienceBar.strokeRoundedRect(x - 1, y - 1, w * ratio + 2, h + 2, 4);
+    }
   }
 
   private updateMoodAndPatience(x: number, y: number, w: number, h: number): void {
@@ -382,11 +392,32 @@ export class CustomerOrderCard extends Phaser.GameObjects.Container {
     let emote = '😊';
     let col: string = THEME.colors.curryGreenHex;
 
-    if (ratio < 0.3) {
+    if (ratio < 0.20) {
+      mood = 'impatient';
+      emote = '😰';
+      col = '#E74C3C';
+
+      if (!this.isPulsingWarning) {
+        this.isPulsingWarning = true;
+        this.warningTween = this.scene.tweens.add({
+          targets: this,
+          scaleX: 1.025,
+          scaleY: 1.025,
+          duration: 350,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+      }
+
+      if (this.order.patienceRemainingSec === 8) {
+        this.showSpeechBubble('Please hurry with my hot dosa! ⏳', false, 1800);
+      }
+    } else if (ratio < 0.35) {
       mood = 'impatient';
       emote = '😟';
       col = THEME.colors.terracottaHex;
-    } else if (ratio < 0.6) {
+    } else if (ratio < 0.65) {
       mood = 'neutral';
       emote = '😐';
       col = THEME.colors.turmericGoldHex;
@@ -458,7 +489,7 @@ export class CustomerOrderCard extends Phaser.GameObjects.Container {
     });
 
     this.scene.time.delayedCall(duration, () => {
-      if (this.speechContainer) {
+      if (this.speechContainer && this.scene && this.scene.tweens) {
         this.scene.tweens.add({
           targets: this.speechContainer,
           alpha: 0,
@@ -468,6 +499,9 @@ export class CustomerOrderCard extends Phaser.GameObjects.Container {
             this.speechContainer = undefined;
           }
         });
+      } else {
+        this.speechContainer?.destroy();
+        this.speechContainer = undefined;
       }
     });
   }
@@ -479,6 +513,11 @@ export class CustomerOrderCard extends Phaser.GameObjects.Container {
     if (this.patienceTimer) {
       this.patienceTimer.destroy();
     }
+    if (this.warningTween) {
+      this.warningTween.stop();
+      this.warningTween = undefined;
+    }
+    this.setScale(1.0);
 
     if (reason === 'served') {
       this.moodText.setText('😍');
@@ -510,6 +549,14 @@ export class CustomerOrderCard extends Phaser.GameObjects.Container {
   public override destroy(fromScene?: boolean): void {
     if (this.patienceTimer) {
       this.patienceTimer.destroy();
+    }
+    if (this.warningTween) {
+      this.warningTween.stop();
+      this.warningTween = undefined;
+    }
+    if (this.speechContainer) {
+      this.speechContainer.destroy();
+      this.speechContainer = undefined;
     }
     super.destroy(fromScene);
   }

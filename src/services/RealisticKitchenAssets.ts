@@ -16,6 +16,10 @@ export class RealisticKitchenAssets {
     RealisticKitchenAssets.createPotatoMasalaBowl(scene);
     RealisticKitchenAssets.createPodiBowl(scene);
     RealisticKitchenAssets.createShallotsBowl(scene);
+    RealisticKitchenAssets.createMysorePasteBowl(scene);
+    RealisticKitchenAssets.createPaneerMasalaBowl(scene);
+    RealisticKitchenAssets.createAmulCheeseBowl(scene);
+    RealisticKitchenAssets.createCoconutBowl(scene);
     RealisticKitchenAssets.createCoconutChutneyBowl(scene);
     RealisticKitchenAssets.createTomatoChutneyBowl(scene);
     RealisticKitchenAssets.createSambarBowl(scene);
@@ -504,6 +508,250 @@ export class RealisticKitchenAssets {
     }
 
     scene.textures.addCanvas('realistic_shallots_bowl', canvas);
+  }
+
+  /**
+   * 6a. Mysore Red Garlic Chutney Paste Bowl
+   * Fiery Byadagi chili, roasted garlic, tamarind & chana dal paste with oil sheen
+   */
+  private static createMysorePasteBowl(scene: Phaser.Scene): void {
+    const size = 140;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const r = 50;
+
+    RealisticKitchenAssets.drawSteelBowlBase(ctx, cx, cy, r);
+
+    // Deep ruby red roasted garlic chili paste
+    const pasteGrad = ctx.createRadialGradient(cx - 8, cy - 8, 4, cx, cy, r - 6);
+    pasteGrad.addColorStop(0, '#D9534F');
+    pasteGrad.addColorStop(0.4, '#C0392B');
+    pasteGrad.addColorStop(0.8, '#900C3F');
+    pasteGrad.addColorStop(1, '#5C1D24');
+
+    ctx.fillStyle = pasteGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Swirl ridges from wooden spatula
+    ctx.strokeStyle = 'rgba(100, 20, 25, 0.45)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 26, 0.4, Math.PI * 1.6);
+    ctx.stroke();
+
+    // Glossy seasoned oil sheen
+    ctx.fillStyle = 'rgba(255, 230, 180, 0.35)';
+    ctx.beginPath();
+    ctx.ellipse(cx - 10, cy - 12, 16, 7, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Crushed red chili flakes & golden roasted chana dal specks
+    for (let i = 0; i < 24; i++) {
+      const a = (i * 2.39996) % (Math.PI * 2);
+      const d = Math.sqrt((i + 1) / 24) * (r - 12);
+      const px = cx + Math.cos(a) * d;
+      const py = cy + Math.sin(a) * d;
+
+      ctx.fillStyle = i % 3 === 0 ? '#F9E79F' : '#E74C3C';
+      ctx.beginPath();
+      ctx.arc(px, py, i % 3 === 0 ? 1.8 : 1.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    scene.textures.addCanvas('realistic_mysore_paste_bowl', canvas);
+  }
+
+  /**
+   * 6b. Chettinad Spicy Paneer Masala Bowl
+   * Crumbled and diced malai paneer in black pepper & fennel masala
+   */
+  private static createPaneerMasalaBowl(scene: Phaser.Scene): void {
+    const size = 140;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const r = 50;
+
+    RealisticKitchenAssets.drawSteelBowlBase(ctx, cx, cy, r);
+
+    // Warm roasted onion-tomato pepper base
+    const baseGrad = ctx.createRadialGradient(cx - 6, cy - 6, 5, cx, cy, r - 6);
+    baseGrad.addColorStop(0, '#D4AC0D');
+    baseGrad.addColorStop(0.5, '#B7950B');
+    baseGrad.addColorStop(0.85, '#7D6608');
+    baseGrad.addColorStop(1, '#4A3B05');
+
+    ctx.fillStyle = baseGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Diced fresh malai paneer cubes
+    const cubes = [
+      { x: -14, y: -12, w: 14, h: 12, rot: 0.2 },
+      { x: 10, y: -16, w: 15, h: 13, rot: -0.3 },
+      { x: -4, y: 2, w: 16, h: 14, rot: 0.1 },
+      { x: -18, y: 16, w: 13, h: 12, rot: -0.2 },
+      { x: 14, y: 12, w: 15, h: 13, rot: 0.4 },
+      { x: 2, y: -24, w: 12, h: 11, rot: 0.5 }
+    ];
+
+    cubes.forEach(c => {
+      ctx.save();
+      ctx.translate(cx + c.x, cy + c.y);
+      ctx.rotate(c.rot);
+
+      // Paneer cube drop shadow
+      ctx.fillStyle = 'rgba(50, 40, 20, 0.4)';
+      ctx.fillRect(-c.w / 2 + 2, -c.h / 2 + 2, c.w, c.h);
+
+      // Creamy white paneer face
+      ctx.fillStyle = '#FFFDF5';
+      ctx.fillRect(-c.w / 2, -c.h / 2, c.w, c.h);
+
+      // Light golden seared edge
+      ctx.fillStyle = '#E59866';
+      ctx.fillRect(-c.w / 2, -c.h / 2, c.w, 2);
+
+      ctx.restore();
+    });
+
+    // Cracked Tellicherry black peppercorns & toasted fennel seeds
+    ctx.fillStyle = '#17202A';
+    for (let p = 0; p < 22; p++) {
+      const a = (p * 1.9) % (Math.PI * 2);
+      const d = 6 + (p * 4) % (r - 12);
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(a) * d, cy + Math.sin(a) * d, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Curry leaf garnish
+    ctx.fillStyle = '#1E8449';
+    ctx.beginPath();
+    ctx.ellipse(cx + 6, cy - 2, 9, 4, 0.6, 0, Math.PI * 2);
+    ctx.fill();
+
+    scene.textures.addCanvas('realistic_paneer_masala_bowl', canvas);
+  }
+
+  /**
+   * 6c. Grated Amul Cheese Bowl
+   * Mountain of fluffy pale golden grated cheese ribbons
+   */
+  private static createAmulCheeseBowl(scene: Phaser.Scene): void {
+    const size = 140;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const r = 50;
+
+    RealisticKitchenAssets.drawSteelBowlBase(ctx, cx, cy, r);
+
+    // Warm buttery base
+    ctx.fillStyle = '#F9E79F';
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Grated cheese shreds in varied directions
+    for (let i = 0; i < 54; i++) {
+      const a = (i * 2.39996) % (Math.PI * 2);
+      const d = Math.sqrt((i + 1) / 54) * (r - 10);
+      const sx = cx + Math.cos(a) * d;
+      const sy = cy + Math.sin(a) * d;
+
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.rotate((i * 1.3) % Math.PI);
+
+      ctx.fillStyle = i % 2 === 0 ? '#FEF9E7' : '#F7DC6F';
+      ctx.fillRect(-7, -1.8, 14, 3.6);
+
+      ctx.restore();
+    }
+
+    // Chopped spicy green chillies scattered
+    for (let j = 0; j < 8; j++) {
+      const a = (j * Math.PI * 2) / 8 + 0.5;
+      const d = 12 + (j % 3) * 11;
+      ctx.fillStyle = '#27AE60';
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(a) * d, cy + Math.sin(a) * d, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    scene.textures.addCanvas('realistic_cheese_bowl', canvas);
+  }
+
+  /**
+   * 6d. Sweet Grated Coconut & Cardamom Bowl
+   * Fresh snowy grated coconut flakes with crushed green cardamom seeds
+   */
+  private static createCoconutBowl(scene: Phaser.Scene): void {
+    const size = 140;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const r = 50;
+
+    RealisticKitchenAssets.drawSteelBowlBase(ctx, cx, cy, r);
+
+    // Light coconut water / cream bed
+    ctx.fillStyle = '#EAECEE';
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Fluffy snow-white grated coconut curls & flakes
+    for (let i = 0; i < 68; i++) {
+      const a = (i * 2.39996) % (Math.PI * 2);
+      const d = Math.sqrt((i + 1) / 68) * (r - 9);
+      const fx = cx + Math.cos(a) * d;
+      const fy = cy + Math.sin(a) * d;
+
+      ctx.save();
+      ctx.translate(fx, fy);
+      ctx.rotate((i * 0.9) % Math.PI);
+
+      ctx.fillStyle = i % 3 === 0 ? '#FFFFFF' : '#FDFEFE';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 5, 2.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Crushed green cardamom pod bits & brown jaggery granules
+    for (let k = 0; k < 18; k++) {
+      const a = (k * 2.7) % (Math.PI * 2);
+      const d = 8 + (k * 3.5) % (r - 12);
+      ctx.fillStyle = k % 2 === 0 ? '#27AE60' : '#6E2C00';
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(a) * d, cy + Math.sin(a) * d, 1.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    scene.textures.addCanvas('realistic_coconut_bowl', canvas);
   }
 
   /**
