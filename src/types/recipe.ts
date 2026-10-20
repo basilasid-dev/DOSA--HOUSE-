@@ -67,6 +67,10 @@ export interface CustomerOrder {
   patienceRemainingSec: number;
   rewardCoins: number;
   mood: CustomerMood;
+  isAccepted?: boolean;
+  status?: 'waiting' | 'accepted' | 'cooking' | 'ready' | 'served' | 'timeout';
+  requiredToppings?: string[];
+  requiredFold?: DosaFoldType;
 }
 
 export interface RestaurantUpgrade {
@@ -80,6 +84,18 @@ export interface RestaurantUpgrade {
   maxLevel: number;
   costs: number[]; // cost for each tier
   effectDescription: string;
+}
+
+export interface LevelDefinition {
+  day: number;
+  serviceTitle: string;
+  tagline: string;
+  requiredCustomers: number;
+  targetScore: number;
+  targetEarnings: number;
+  allowedRecipes: string[];
+  patienceMultiplier: number;
+  unlockedByDefault: boolean;
 }
 
 export interface LevelResult {

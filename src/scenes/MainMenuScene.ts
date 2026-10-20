@@ -6,6 +6,8 @@ import { SteamEmitter } from '../ui/SteamParticles';
 import { RecipeBookModal } from '../ui/RecipeBookModal';
 import { SettingsModal } from '../ui/SettingsModal';
 import { UpgradesModal } from '../ui/UpgradesModal';
+import { LevelSelectModal } from '../ui/LevelSelectModal';
+import { UpgradeService } from '../services/UpgradeService';
 
 export class MainMenuScene extends Phaser.Scene {
   private steamEmitter?: SteamEmitter;
@@ -293,7 +295,7 @@ export class MainMenuScene extends Phaser.Scene {
       width: 350,
       onClick: () => {
         if (this.isModalOpen) return;
-        this.startGame();
+        this.openLevelSelect();
       }
     });
 
@@ -404,7 +406,24 @@ export class MainMenuScene extends Phaser.Scene {
     });
   }
 
-  private startGame(): void {
+  private openLevelSelect(): void {
+    this.isModalOpen = true;
+    new LevelSelectModal(
+      this,
+      (selectedDay: number) => {
+        this.isModalOpen = false;
+        this.startGame(selectedDay);
+      },
+      () => {
+        this.isModalOpen = false;
+      }
+    );
+  }
+
+  private startGame(day?: number): void {
+    if (day !== undefined) {
+      UpgradeService.getInstance().setCurrentDay(day);
+    }
     SoundFX.getInstance().playSizzle(0.9);
     this.cameras.main.fadeOut(350, 26, 14, 7);
     this.cameras.main.once('camerafadeoutcomplete', () => {

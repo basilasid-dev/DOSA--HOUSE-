@@ -9,6 +9,9 @@ export class RealisticKitchenAssets {
   public static generateAll(scene: Phaser.Scene): void {
     RealisticKitchenAssets.createCastIronTawa(scene);
     RealisticKitchenAssets.createBatterBowl(scene);
+    RealisticKitchenAssets.createBatterBowlVessel(scene);
+    RealisticKitchenAssets.createLadleTextures(scene);
+    RealisticKitchenAssets.createBatterDollopTexture(scene);
     RealisticKitchenAssets.createGheePot(scene);
     RealisticKitchenAssets.createPotatoMasalaBowl(scene);
     RealisticKitchenAssets.createPodiBowl(scene);
@@ -905,4 +908,274 @@ export class RealisticKitchenAssets {
     ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.closePath();
   }
+
+  /**
+   * Batter bowl without baked-in ladle, allowing separate interactive ladle to sit inside
+   */
+  private static createBatterBowlVessel(scene: Phaser.Scene): void {
+    const size = 190;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const r = 74;
+
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 6;
+
+    const steelGrad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+    steelGrad.addColorStop(0, '#FFFFFF');
+    steelGrad.addColorStop(0.3, '#CCCCCC');
+    steelGrad.addColorStop(0.7, '#888888');
+    steelGrad.addColorStop(1, '#555555');
+
+    ctx.fillStyle = steelGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.shadowColor = 'transparent';
+
+    const batterGrad = ctx.createRadialGradient(cx - 15, cy - 15, 10, cx, cy, r - 8);
+    batterGrad.addColorStop(0, '#FFFFFF');
+    batterGrad.addColorStop(0.6, '#F8F6F0');
+    batterGrad.addColorStop(1, '#ECE7DC');
+
+    ctx.fillStyle = batterGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    const bubbles = [
+      { x: cx - 25, y: cy - 18, rad: 5.5 },
+      { x: cx + 18, y: cy - 30, rad: 4 },
+      { x: cx - 12, y: cy + 22, rad: 6 },
+      { x: cx + 28, y: cy + 14, rad: 4.5 },
+      { x: cx - 35, y: cy + 10, rad: 3.5 },
+      { x: cx + 5, y: cy - 8, rad: 5 }
+    ];
+
+    bubbles.forEach(b => {
+      ctx.fillStyle = 'rgba(235, 230, 220, 0.9)';
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.rad, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(200, 190, 175, 0.7)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(b.x - b.rad * 0.3, b.y - b.rad * 0.3, b.rad * 0.35, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    scene.textures.addCanvas('realistic_batter_bowl_vessel', canvas);
+  }
+
+  /**
+   * Draggable Dosa Ladle: Full (with thick white batter) & Empty (metallic cup with batter residue)
+   */
+  private static createLadleTextures(scene: Phaser.Scene): void {
+    const width = 90;
+    const height = 200;
+    const cupX = 45;
+    const cupY = 155;
+    const cupRadius = 26;
+
+    // 1. Ladle Full of Batter
+    const canvasFull = document.createElement('canvas');
+    canvasFull.width = width;
+    canvasFull.height = height;
+    const ctxF = canvasFull.getContext('2d')!;
+
+    // Drop shadow
+    ctxF.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctxF.shadowBlur = 10;
+    ctxF.shadowOffsetY = 6;
+
+    // Handle (slender steel neck from cup up to handle)
+    const steelNeck = ctxF.createLinearGradient(cupX - 7, 0, cupX + 7, 0);
+    steelNeck.addColorStop(0, '#FFFFFF');
+    steelNeck.addColorStop(0.5, '#CCCCCC');
+    steelNeck.addColorStop(1, '#777777');
+    ctxF.fillStyle = steelNeck;
+    RealisticKitchenAssets.drawRoundedRect(ctxF, cupX - 6, 25, 12, 135, 4);
+    ctxF.fill();
+
+    // Wooden grip at top of handle
+    const woodGrip = ctxF.createLinearGradient(cupX - 8, 15, cupX + 8, 85);
+    woodGrip.addColorStop(0, '#653E26');
+    woodGrip.addColorStop(0.5, '#432616');
+    woodGrip.addColorStop(1, '#2E150B');
+    ctxF.fillStyle = woodGrip;
+    RealisticKitchenAssets.drawRoundedRect(ctxF, cupX - 8, 18, 16, 75, 6);
+    ctxF.fill();
+
+    // Brass rivets & hanging loop
+    ctxF.fillStyle = '#D4AF37';
+    ctxF.beginPath();
+    ctxF.arc(cupX, 35, 2.5, 0, Math.PI * 2);
+    ctxF.arc(cupX, 70, 2.5, 0, Math.PI * 2);
+    ctxF.fill();
+
+    ctxF.strokeStyle = '#CCCCCC';
+    ctxF.lineWidth = 2.5;
+    ctxF.beginPath();
+    ctxF.arc(cupX, 15, 6, Math.PI, 0);
+    ctxF.stroke();
+
+    // Metallic Ladle Outer Bowl
+    const bowlGrad = ctxF.createRadialGradient(cupX - 8, cupY - 8, 4, cupX, cupY, cupRadius);
+    bowlGrad.addColorStop(0, '#FFFFFF');
+    bowlGrad.addColorStop(0.3, '#E0E0E0');
+    bowlGrad.addColorStop(0.7, '#999999');
+    bowlGrad.addColorStop(1, '#555555');
+
+    ctxF.fillStyle = bowlGrad;
+    ctxF.beginPath();
+    ctxF.arc(cupX, cupY, cupRadius, 0, Math.PI * 2);
+    ctxF.fill();
+
+    ctxF.shadowColor = 'transparent';
+
+    // Filled with thick white fermented batter
+    const batterGrad = ctxF.createRadialGradient(cupX - 6, cupY - 6, 3, cupX, cupY, cupRadius - 4);
+    batterGrad.addColorStop(0, '#FFFFFF');
+    batterGrad.addColorStop(0.6, '#F8F6EF');
+    batterGrad.addColorStop(1, '#EDE7DA');
+
+    ctxF.fillStyle = batterGrad;
+    ctxF.beginPath();
+    ctxF.arc(cupX, cupY, cupRadius - 4, 0, Math.PI * 2);
+    ctxF.fill();
+
+    // Liquid surface reflection & bubbles
+    ctxF.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctxF.beginPath();
+    ctxF.ellipse(cupX - 8, cupY - 8, 10, 5, -0.4, 0, Math.PI * 2);
+    ctxF.fill();
+
+    ctxF.fillStyle = 'rgba(230, 225, 215, 0.9)';
+    ctxF.beginPath();
+    ctxF.arc(cupX + 8, cupY + 6, 3, 0, Math.PI * 2);
+    ctxF.arc(cupX - 6, cupY + 10, 2.5, 0, Math.PI * 2);
+    ctxF.fill();
+
+    scene.textures.addCanvas('realistic_ladle_full', canvasFull);
+
+    // 2. Ladle Empty (Concave bottom with glossy batter coating)
+    const canvasEmpty = document.createElement('canvas');
+    canvasEmpty.width = width;
+    canvasEmpty.height = height;
+    const ctxE = canvasEmpty.getContext('2d')!;
+
+    // Copy handle structure
+    ctxE.drawImage(canvasFull, 0, 0);
+
+    // Redraw cup as concave metal with wet residue
+    ctxE.clearRect(cupX - cupRadius - 4, cupY - cupRadius - 4, (cupRadius + 4) * 2, (cupRadius + 4) * 2);
+
+    ctxE.shadowColor = 'rgba(0, 0, 0, 0.45)';
+    ctxE.shadowBlur = 10;
+    ctxE.shadowOffsetY = 5;
+
+    ctxE.fillStyle = bowlGrad;
+    ctxE.beginPath();
+    ctxE.arc(cupX, cupY, cupRadius, 0, Math.PI * 2);
+    ctxE.fill();
+
+    ctxE.shadowColor = 'transparent';
+
+    // Inner concave steel gradient
+    const innerSteel = ctxE.createRadialGradient(cupX + 6, cupY + 6, 2, cupX, cupY, cupRadius - 4);
+    innerSteel.addColorStop(0, '#555555');
+    innerSteel.addColorStop(0.5, '#888888');
+    innerSteel.addColorStop(0.85, '#CCCCCC');
+    innerSteel.addColorStop(1, '#FFFFFF');
+
+    ctxE.fillStyle = innerSteel;
+    ctxE.beginPath();
+    ctxE.arc(cupX, cupY, cupRadius - 4, 0, Math.PI * 2);
+    ctxE.fill();
+
+    // Wet batter coating streaks
+    ctxE.fillStyle = 'rgba(255, 252, 244, 0.45)';
+    ctxE.beginPath();
+    ctxE.arc(cupX, cupY, cupRadius - 6, 0.4, Math.PI * 1.6);
+    ctxE.fill();
+
+    scene.textures.addCanvas('realistic_ladle_empty', canvasEmpty);
+  }
+
+  /**
+   * Initial wet batter dollop texture before spreading
+   */
+  private static createBatterDollopTexture(scene: Phaser.Scene): void {
+    const size = 120;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const r = 46;
+
+    // Soft wet shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetY = 3;
+
+    // Organic slightly wavy edge
+    ctx.beginPath();
+    for (let a = 0; a < Math.PI * 2; a += 0.2) {
+      const wobble = Math.sin(a * 5) * 2.5 + Math.cos(a * 3) * 1.5;
+      const x = cx + Math.cos(a) * (r + wobble);
+      const y = cy + Math.sin(a) * (r + wobble);
+      if (a === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+
+    const batterGrad = ctx.createRadialGradient(cx - 10, cy - 10, 5, cx, cy, r);
+    batterGrad.addColorStop(0, '#FFFFFF');
+    batterGrad.addColorStop(0.5, '#FAF7EF');
+    batterGrad.addColorStop(0.85, '#EFE8D8');
+    batterGrad.addColorStop(1, '#E2D8C3');
+
+    ctx.fillStyle = batterGrad;
+    ctx.fill();
+
+    ctx.shadowColor = 'transparent';
+
+    // Micro steam bubbles
+    const bubbles = [
+      { x: cx - 14, y: cy - 10, rad: 4 },
+      { x: cx + 12, y: cy - 18, rad: 3.5 },
+      { x: cx - 8, y: cy + 16, rad: 4.5 },
+      { x: cx + 18, y: cy + 10, rad: 3 },
+      { x: cx + 2, y: cy + 2, rad: 4 }
+    ];
+
+    bubbles.forEach(b => {
+      ctx.fillStyle = 'rgba(230, 222, 206, 0.85)';
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.rad, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(b.x - 1, b.y - 1, b.rad * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    scene.textures.addCanvas('fx_batter_dollop', canvas);
+  }
 }
+

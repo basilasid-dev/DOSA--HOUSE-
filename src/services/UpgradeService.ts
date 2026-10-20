@@ -1,9 +1,82 @@
-import { RestaurantUpgrade } from '../types/recipe';
+import { RestaurantUpgrade, LevelDefinition } from '../types/recipe';
+
+interface SaveData {
+  playerCoins: number;
+  currentDay: number;
+  unlockedDay: number;
+  dayStars: Record<number, number>;
+  dayHighScores: Record<number, number>;
+  upgrades: Record<string, number>;
+}
+
+const STORAGE_KEY = 'DOSA_HOUSE_SAVE_DATA_V1';
 
 export class UpgradeService {
   private static instance: UpgradeService;
-  private playerCoins: number = 650; // Starting coins for player to experiment with
-  private restaurantLevel: number = 1;
+  private playerCoins: number = 250;
+  private currentDay: number = 1;
+  private unlockedDay: number = 1;
+  private dayStars: Record<number, number> = {};
+  private dayHighScores: Record<number, number> = {};
+
+  private levels: LevelDefinition[] = [
+    {
+      day: 1,
+      serviceTitle: 'Morning Tiffin Rush',
+      tagline: 'Master the art of crispy Plain Roast & golden Masala Dosa.',
+      requiredCustomers: 3,
+      targetScore: 240,
+      targetEarnings: 250,
+      allowedRecipes: ['plain_roast', 'masala_dosa'],
+      patienceMultiplier: 1.0,
+      unlockedByDefault: true
+    },
+    {
+      day: 2,
+      serviceTitle: 'Fiery Gunpowder Rush',
+      tagline: 'Diners demand aromatic Ghee Podi Roast with explosive spice!',
+      requiredCustomers: 4,
+      targetScore: 360,
+      targetEarnings: 380,
+      allowedRecipes: ['plain_roast', 'masala_dosa', 'ghee_podi_dosa'],
+      patienceMultiplier: 0.95,
+      unlockedByDefault: false
+    },
+    {
+      day: 3,
+      serviceTitle: 'Evening Uthappam Crowd',
+      tagline: 'Caramelized shallots and chillies sizzle on the seasoned tawa.',
+      requiredCustomers: 5,
+      targetScore: 480,
+      targetEarnings: 520,
+      allowedRecipes: ['plain_roast', 'masala_dosa', 'ghee_podi_dosa', 'onion_uthappam'],
+      patienceMultiplier: 0.90,
+      unlockedByDefault: false
+    },
+    {
+      day: 4,
+      serviceTitle: 'Royal Palace Dinner Feast',
+      tagline: 'Food connoisseurs arrive for decadent buttery roasts and savory fillings.',
+      requiredCustomers: 6,
+      targetScore: 620,
+      targetEarnings: 700,
+      allowedRecipes: ['plain_roast', 'masala_dosa', 'ghee_podi_dosa', 'onion_uthappam'],
+      patienceMultiplier: 0.85,
+      unlockedByDefault: false
+    },
+    {
+      day: 5,
+      serviceTitle: 'Grand Harvest Tiffin Festival',
+      tagline: 'The ultimate culinary rush. Every table is packed!',
+      requiredCustomers: 8,
+      targetScore: 850,
+      targetEarnings: 950,
+      allowedRecipes: ['plain_roast', 'masala_dosa', 'ghee_podi_dosa', 'onion_uthappam'],
+      patienceMultiplier: 0.80,
+      unlockedByDefault: false
+    }
+  ];
+
   private upgrades: RestaurantUpgrade[] = [
     // Kitchen Equipment
     {
@@ -11,35 +84,35 @@ export class UpgradeService {
       name: 'Granite Wet Grinder',
       tamilName: 'கிரானைட் ஆட்டுக்கல்',
       category: 'kitchen',
-      description: 'Traditional heavy granite roller stone. Grinds rice & urad dal into ultra-aerated, fluffy batter.',
+      description: 'Traditional heavy granite roller stone. Grinds rice & urad dal into ultra-aerated, smooth batter.',
       icon: '⚙️',
-      currentLevel: 1,
+      currentLevel: 0,
       maxLevel: 3,
-      costs: [250, 600, 1200],
-      effectDescription: '+20% faster batter replenishment & lacy texture'
+      costs: [180, 420, 900],
+      effectDescription: '+25% faster batter swirling & smoother spread'
     },
     {
       id: 'dual_tawa',
-      name: 'Dual Cast-Iron Kal Tawa',
-      tamilName: 'இரட்டை இரும்பு தவா',
+      name: 'Seasoned Heavy Kal Tawa',
+      tamilName: 'பழக்கப்பட்ட இரும்பு தவா',
       category: 'kitchen',
-      description: 'Second heavy seasoned iron tawa. Lets you maintain optimal cooking temperature continuously.',
+      description: 'Superior heat-retention cast iron. Speeds up crisping and prevents sudden burning.',
       icon: '🍳',
       currentLevel: 0,
       maxLevel: 3,
-      costs: [350, 850, 1600],
-      effectDescription: 'Tawa heats up 30% faster & prevents burning'
+      costs: [220, 500, 1100],
+      effectDescription: '+20% faster roasting & +25% burn resistance'
     },
     {
       id: 'a2_ghee_jar',
       name: 'Pure Desi Cow Ghee Dispenser',
       tamilName: 'சுத்தமான நாட்டு மாட்டு நெய்',
       category: 'kitchen',
-      description: 'Artisanal golden bilona ghee from grass-fed cows. Irresistible nutty aroma earns higher tips.',
+      description: 'Artisanal golden bilona ghee from grass-fed cows. Irresistible aroma earns higher tips.',
       icon: '🧈',
-      currentLevel: 1,
+      currentLevel: 0,
       maxLevel: 3,
-      costs: [280, 700, 1400],
+      costs: [200, 480, 950],
       effectDescription: '+25% bonus customer tip coins on every order'
     },
     {
@@ -47,12 +120,12 @@ export class UpgradeService {
       name: 'Temple Service Bell',
       tamilName: 'பித்தளை சேவை மணி',
       category: 'kitchen',
-      description: 'Clear resonant brass bell. Ringing when plating attracts VIP food bloggers and royalty.',
+      description: 'Clear resonant brass bell. Ringing when plating attracts VIP food connoisseurs with 1.5x rewards.',
       icon: '🔔',
       currentLevel: 0,
       maxLevel: 2,
-      costs: [450, 1100],
-      effectDescription: 'Attracts generous VIP diners with 2x rewards'
+      costs: [300, 750],
+      effectDescription: '+30% chance for VIP guests paying 1.5x coins'
     },
 
     // Restaurant Decor & Ambiance
@@ -61,36 +134,24 @@ export class UpgradeService {
       name: 'Hanging Brass Thooku Vilakku',
       tamilName: 'பித்தளை தூக்கு விளக்கு',
       category: 'ambiance',
-      description: 'Traditional tiered hanging oil lamps casting a warm, serene golden glow across the dining room.',
+      description: 'Tiered hanging brass oil lamps casting a warm, peaceful glow across the dining room.',
       icon: '🪔',
-      currentLevel: 1,
-      maxLevel: 3,
-      costs: [200, 500, 1000],
-      effectDescription: 'Calms guests; increases patience timer by +15 seconds'
-    },
-    {
-      id: 'chettinad_pillars',
-      name: 'Chettinad Teak Pillars',
-      tamilName: 'செட்டிநாடு தேக்கு மரத்தூண்கள்',
-      category: 'ambiance',
-      description: 'Centuries-old hand-carved rosewood and teak pillars with lotus capitals and brass rings.',
-      icon: '🏛️',
       currentLevel: 0,
       maxLevel: 3,
-      costs: [400, 950, 1900],
-      effectDescription: 'Elevates restaurant rating & increases customer traffic'
+      costs: [150, 380, 800],
+      effectDescription: 'Calms guests; increases patience timer by +12s'
     },
     {
       id: 'marigold_garlands',
       name: 'Fresh Marigold & Mango Toran',
       tamilName: 'சாமந்தி & மா இலை தோரணம்',
       category: 'ambiance',
-      description: 'Fragrant saffron marigold flowers and fresh mango leaves strung across the dining entrance.',
+      description: 'Fragrant saffron marigold flowers and fresh mango leaves strung across the restaurant.',
       icon: '🌼',
-      currentLevel: 1,
+      currentLevel: 0,
       maxLevel: 2,
-      costs: [150, 400],
-      effectDescription: 'Welcomes larger dining groups; +1 extra order ticket slot'
+      costs: [140, 320],
+      effectDescription: 'Welcomes diners warmly; +10% mood retention'
     },
     {
       id: 'tanjore_paintings',
@@ -101,10 +162,14 @@ export class UpgradeService {
       icon: '🖼️',
       currentLevel: 0,
       maxLevel: 2,
-      costs: [550, 1300],
-      effectDescription: 'Royal prestige boost; +35% total score multiplier'
+      costs: [350, 850],
+      effectDescription: 'Royal prestige boost; +20% master chef score'
     }
   ];
+
+  constructor() {
+    this.load();
+  }
 
   public static getInstance(): UpgradeService {
     if (!UpgradeService.instance) {
@@ -113,29 +178,78 @@ export class UpgradeService {
     return UpgradeService.instance;
   }
 
+  // ==================== COIN & BALANCE MANAGEMENT ====================
+
   public getCoins(): number {
     return this.playerCoins;
   }
 
   public addCoins(amount: number): void {
-    this.playerCoins += amount;
+    this.playerCoins = Math.max(0, this.playerCoins + amount);
+    this.save();
   }
 
   public deductCoins(amount: number): boolean {
     if (this.playerCoins >= amount) {
       this.playerCoins -= amount;
+      this.save();
       return true;
     }
     return false;
   }
 
-  public getLevel(): number {
-    return this.restaurantLevel;
+  // ==================== LEVEL PROGRESSION ====================
+
+  public getCurrentDay(): number {
+    return this.currentDay;
   }
 
-  public setLevel(lvl: number): void {
-    this.restaurantLevel = lvl;
+  public setCurrentDay(day: number): void {
+    if (day >= 1 && day <= this.levels.length) {
+      this.currentDay = day;
+      this.save();
+    }
   }
+
+  public getUnlockedDay(): number {
+    return this.unlockedDay;
+  }
+
+  public isLevelUnlocked(day: number): boolean {
+    return day <= this.unlockedDay;
+  }
+
+  public getLevelDefinition(day: number): LevelDefinition {
+    const found = this.levels.find(l => l.day === day);
+    return found || this.levels[0];
+  }
+
+  public getAllLevels(): LevelDefinition[] {
+    return this.levels;
+  }
+
+  public getStarsForDay(day: number): number {
+    return this.dayStars[day] || 0;
+  }
+
+  public getHighScoreForDay(day: number): number {
+    return this.dayHighScores[day] || 0;
+  }
+
+  public completeLevel(day: number, starsEarned: number, score: number, earnings: number): void {
+    // Record highest stars and score
+    this.dayStars[day] = Math.max(this.dayStars[day] || 0, starsEarned);
+    this.dayHighScores[day] = Math.max(this.dayHighScores[day] || 0, score);
+
+    // Unlock next level
+    if (day >= this.unlockedDay && day < this.levels.length) {
+      this.unlockedDay = day + 1;
+    }
+
+    this.save();
+  }
+
+  // ==================== UPGRADE PURCHASING ====================
 
   public getAllUpgrades(): RestaurantUpgrade[] {
     return this.upgrades;
@@ -143,6 +257,11 @@ export class UpgradeService {
 
   public getUpgrade(id: string): RestaurantUpgrade | undefined {
     return this.upgrades.find(u => u.id === id);
+  }
+
+  public getUpgradeLevel(id: string): number {
+    const up = this.getUpgrade(id);
+    return up ? up.currentLevel : 0;
   }
 
   public canAfford(upgradeId: string): boolean {
@@ -158,8 +277,127 @@ export class UpgradeService {
     const cost = up.costs[up.currentLevel];
     if (this.deductCoins(cost)) {
       up.currentLevel++;
+      this.save();
       return true;
     }
     return false;
+  }
+
+  // ==================== GAMEPLAY MODIFIERS ====================
+
+  /**
+   * Granite wet grinder: Faster batter spreading speed
+   */
+  public getSpreadSpeedMultiplier(): number {
+    const lvl = this.getUpgradeLevel('wet_grinder');
+    return 1.0 + lvl * 0.25;
+  }
+
+  /**
+   * Seasoned kal tawa: Roasting crisp rate
+   */
+  public getCookingSpeedMultiplier(): number {
+    const lvl = this.getUpgradeLevel('dual_tawa');
+    return 1.0 + lvl * 0.20;
+  }
+
+  /**
+   * Seasoned kal tawa: Extra seconds buffer before dosa burns
+   */
+  public getBurnResistanceBuffer(): number {
+    const lvl = this.getUpgradeLevel('dual_tawa');
+    return lvl * 0.15; // +15% per tier
+  }
+
+  /**
+   * Desi cow ghee dispenser: Customer tip multiplier
+   */
+  public getTipBonusMultiplier(): number {
+    const lvl = this.getUpgradeLevel('a2_ghee_jar');
+    return 1.0 + lvl * 0.25;
+  }
+
+  /**
+   * Brass Thooku Vilakku: Additional customer patience seconds
+   */
+  public getPatienceBonusSeconds(): number {
+    const lvl = this.getUpgradeLevel('brass_lamps');
+    return lvl * 12; // +12s per tier
+  }
+
+  /**
+   * Temple service bell: Probability of VIP diner appearing (paying 1.5x coins)
+   */
+  public getVipCustomerChance(): number {
+    const lvl = this.getUpgradeLevel('brass_bell');
+    return lvl * 0.25; // 25% or 50% chance
+  }
+
+  /**
+   * Tanjore gold leaf murals: Master chef score multiplier
+   */
+  public getScoreMultiplier(): number {
+    const lvl = this.getUpgradeLevel('tanjore_paintings');
+    return 1.0 + lvl * 0.20; // +20% score per tier
+  }
+
+  // ==================== PERSISTENT STORAGE ====================
+
+  private save(): void {
+    try {
+      const upgradeLevels: Record<string, number> = {};
+      this.upgrades.forEach(u => {
+        upgradeLevels[u.id] = u.currentLevel;
+      });
+
+      const data: SaveData = {
+        playerCoins: this.playerCoins,
+        currentDay: this.currentDay,
+        unlockedDay: this.unlockedDay,
+        dayStars: this.dayStars,
+        dayHighScores: this.dayHighScores,
+        upgrades: upgradeLevels
+      };
+
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      }
+    } catch {
+      // Storage unavailable or quota exceeded
+    }
+  }
+
+  private load(): void {
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return;
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+
+      const data: SaveData = JSON.parse(raw);
+      if (typeof data.playerCoins === 'number') {
+        this.playerCoins = data.playerCoins;
+      }
+      if (typeof data.currentDay === 'number') {
+        this.currentDay = data.currentDay;
+      }
+      if (typeof data.unlockedDay === 'number') {
+        this.unlockedDay = data.unlockedDay;
+      }
+      if (data.dayStars) {
+        this.dayStars = data.dayStars;
+      }
+      if (data.dayHighScores) {
+        this.dayHighScores = data.dayHighScores;
+      }
+      if (data.upgrades) {
+        this.upgrades.forEach(u => {
+          if (typeof data.upgrades[u.id] === 'number') {
+            u.currentLevel = Math.min(u.maxLevel, data.upgrades[u.id]);
+          }
+        });
+      }
+    } catch {
+      // Corrupt save data, default values retained
+    }
   }
 }
